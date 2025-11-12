@@ -6,13 +6,27 @@
   "bin": {
     "binman": "index.js"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "keywords": [
     "util"
   ],
   "author": "Yousaf Wazir",
   "license": "ISC",
-  "os": ["darwin", "linux", "win32"],
-  "cpu": ["x64"]
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UmbrellaCrow612/binman"
+  },
+  "files": [
+    "index.js",
+    "bin/",
+    "README.md"
+  ]
 }

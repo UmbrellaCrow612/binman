@@ -31,7 +31,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/UmbrellaCrow612/binman"
+    "url": "git+https://github.com/UmbrellaCrow612/binman.git"
   },
   "files": [
     "index.js",

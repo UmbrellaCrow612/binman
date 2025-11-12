@@ -1,14 +1,23 @@
 {
   "name": "umbr-binman",
-  "version": "1.0.1",
-  "description": "A util to download external binaries",
+  "version": "1.0.2",
+  "description": "A utility to download, verify, and extract external binaries from configuration files.",
   "main": "index.js",
   "bin": {
     "binman": "index.js"
   },
   "scripts": {},
   "keywords": [
-    "util"
+    "binary",
+    "downloader",
+    "utility",
+    "cli",
+    "devtool",
+    "cross-platform",
+    "build-tool",
+    "package-manager",
+    "binman",
+    "automation"
   ],
   "author": "Yousaf Wazir",
   "license": "ISC",

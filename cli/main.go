@@ -13,4 +13,6 @@ func main() {
 	for _, bin := range config.Binaries {
 		fetch.FetchAndStoreBinary(&bin, options)
 	}
+
+	// call extract to extract the folder/key/[..zip/tar] into /bin then unlink downloads
 }

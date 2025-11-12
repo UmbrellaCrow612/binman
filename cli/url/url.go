@@ -6,17 +6,14 @@ import (
 	"strings"
 
 	"github.com/UmbrellaCrow612/binman/cli/printer"
-	"github.com/UmbrellaCrow612/binman/cli/yml"
+	"github.com/UmbrellaCrow612/binman/cli/shared"
 )
 
 var templateRegex = regexp.MustCompile(`\{\{(.+?)\}\}`)
 
-func ResolveAllURLs(cfg *yml.Config) map[string]map[string]string {
-	result := make(map[string]map[string]string)
-
+// ResolveAllURLs replaces {{placeholders}} in each Binary's URLs using Extra fields
+func ResolveAllURLs(cfg *shared.Config) {
 	for _, bin := range cfg.Binaries {
-		result[bin.Name] = make(map[string]string)
-
 		for key, url := range bin.URL {
 			// Find all {{key}} placeholders
 			matches := templateRegex.FindAllStringSubmatch(url, -1)
@@ -27,18 +24,33 @@ func ResolveAllURLs(cfg *yml.Config) map[string]map[string]string {
 				placeholder := match[0] // "{{version}}"
 				fieldKey := match[1]    // "version"
 
-				value, ok := bin.Extra[fieldKey]
-				if !ok || value == "" {
-					printer.ExitError(fmt.Sprintf("Binary '%s' URL '%s' requires '%s' but it is missing in extra fields", bin.Name, key, fieldKey))
+				// Look up value in Extra
+				value := ""
+				if v, ok := bin.Extra[fieldKey]; ok {
+					if s, ok := v.(string); ok {
+						value = s
+					} else {
+						printer.ExitError(fmt.Sprintf(
+							"Binary '%s' extra field '%s' is not a string",
+							bin.Name, fieldKey,
+						))
+					}
+				}
+
+				if value == "" {
+					printer.ExitError(fmt.Sprintf(
+						"Binary '%s' URL '%s' requires '{{%s}}' but it is missing in Extra fields",
+						bin.Name, key, fieldKey,
+					))
 				}
 
 				url = strings.ReplaceAll(url, placeholder, value)
 			}
 
-			result[bin.Name][key] = url
+			// Update the URL in-place
+			bin.URL[key] = url
 		}
 	}
 
 	printer.PrintSuccess("All URLs resolved successfully")
-	return result
 }

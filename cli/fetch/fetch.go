@@ -1,6 +1,8 @@
 package fetch
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,12 +12,10 @@ import (
 
 	"github.com/UmbrellaCrow612/binman/cli/args"
 	"github.com/UmbrellaCrow612/binman/cli/printer"
-	"github.com/UmbrellaCrow612/binman/cli/yml"
+	"github.com/UmbrellaCrow612/binman/cli/shared"
 )
 
-// FetchAndStoreBinary downloads all URLs of a binary and stores them under path/downloads/name/platform/.zip or .tar
-// Example path/downloads/fos/linux/fos_linux.zip
-func FetchAndStoreBinary(bin *yml.Binary, opts *args.Options) {
+func FetchAndStoreBinary(bin *shared.Binary, opts *args.Options) {
 	baseDir := filepath.Join(opts.Path, "downloads", bin.Name)
 	if err := os.MkdirAll(baseDir, os.ModePerm); err != nil {
 		printer.ExitError(fmt.Sprintf("Failed to create download directory: %v", err))
@@ -60,5 +60,35 @@ func FetchAndStoreBinary(bin *yml.Binary, opts *args.Options) {
 		}
 
 		printer.PrintSuccess(fmt.Sprintf("Downloaded %s -> %s", platform, filePath))
+
+		expectedSHA, ok := bin.SHA256[platform]
+		if !ok || expectedSHA == "" {
+			printer.ExitError(fmt.Sprintf("No SHA256 provided for %s on platform %s", bin.Name, platform))
+		}
+
+		if err := verifySHA256(filePath, expectedSHA); err != nil {
+			printer.ExitError(fmt.Sprintf("SHA256 verification failed for %s: %v", filePath, err))
+		}
+
+		printer.PrintSuccess(fmt.Sprintf("SHA256 verified for %s", filePath))
 	}
+}
+
+func verifySHA256(filePath, expected string) error {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("cannot open file: %v", err)
+	}
+	defer f.Close()
+
+	hash := sha256.New()
+	if _, err := io.Copy(hash, f); err != nil {
+		return fmt.Errorf("cannot compute hash: %v", err)
+	}
+
+	actual := hex.EncodeToString(hash.Sum(nil))
+	if actual != expected {
+		return fmt.Errorf("hash mismatch: expected %s, got %s", expected, actual)
+	}
+	return nil
 }

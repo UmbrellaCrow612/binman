@@ -24,5 +24,5 @@ func main() {
 		printer.ExitError(err.Error())
 	}
 
-	// cleaner.CleanDownloads(options)
+	cleaner.CleanDownloads(options)
 }

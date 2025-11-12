@@ -1,0 +1,18 @@
+{
+  "name": "umbr-binman",
+  "version": "1.0.0",
+  "description": "A util to download external binaries",
+  "main": "index.js",
+  "bin": {
+    "binman": "index.js"
+  },
+  "scripts": {
+  },
+  "keywords": [
+    "util"
+  ],
+  "author": "Yousaf Wazir",
+  "license": "ISC",
+  "os": ["darwin", "linux", "win32"],
+  "cpu": ["x64"]
+}

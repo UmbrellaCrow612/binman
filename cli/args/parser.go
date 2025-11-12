@@ -14,6 +14,9 @@ type Options struct {
 
 	// Path to the binman.yml config file
 	PathToFile string
+
+	// Build only for a specific platform
+	SpecificPlatformBuild string
 }
 
 // Parse args passed to the cli and get the options
@@ -60,4 +63,11 @@ func setOptions(options *Options) {
 
 	options.PathToFile = configPath
 	printer.PrintSuccess("Found config file: " + configPath)
+
+	if len(args) > 1 {
+		options.SpecificPlatformBuild = args[1]
+		printer.PrintSuccess("Target platform: " + options.SpecificPlatformBuild)
+	} else {
+		options.SpecificPlatformBuild = ""
+	}
 }

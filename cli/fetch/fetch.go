@@ -23,7 +23,21 @@ func FetchAndStoreBinary(bin *shared.Binary, opts *args.Options) {
 
 	client := http.Client{Timeout: 20 * time.Second}
 
+	if opts.SpecificPlatformBuild != "" {
+		if _, ok := bin.URL[opts.SpecificPlatformBuild]; !ok {
+			printer.ExitError(fmt.Sprintf(
+				"Binary '%s' does not define a URL for platform '%s'",
+				bin.Name,
+				opts.SpecificPlatformBuild,
+			))
+		}
+	}
+
 	for platform, url := range bin.URL {
+		if opts.SpecificPlatformBuild != "" && platform != opts.SpecificPlatformBuild {
+			continue
+		}
+
 		printer.PrintSuccess(fmt.Sprintf("Fetching %s -> %s", platform, url))
 
 		resp, err := client.Get(url)

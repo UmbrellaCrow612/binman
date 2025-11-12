@@ -1,0 +1,6 @@
+binaries:
+  - name: fos
+    url:
+      linux: https://github.com/user-attachments/files/23336838/fos_linux_amd64.zip
+      darwin: https://github.com/user-attachments/files/23336836/fos_darwin_amd64.zip
+      windows: https://github.com/user-attachments/files/23336840/fos_windows_amd64.zip

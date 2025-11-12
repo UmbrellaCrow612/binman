@@ -40,19 +40,24 @@ func extractZip(src, dest string) error {
 		if err != nil {
 			return err
 		}
-		defer inFile.Close()
 
 		outFile, err := os.Create(fPath)
 		if err != nil {
+			inFile.Close()
 			return err
 		}
-		defer outFile.Close()
 
 		if _, err := io.Copy(outFile, inFile); err != nil {
+			inFile.Close()
+			outFile.Close()
 			return err
 		}
+
+		inFile.Close()
+		outFile.Close()
 	}
-	return nil
+
+	return flattenSingleFolder(dest)
 }
 
 // Extract TAR.GZ file to destination
@@ -94,10 +99,48 @@ func extractTarGz(src, dest string) error {
 			if err != nil {
 				return err
 			}
-			defer outFile.Close()
 			if _, err := io.Copy(outFile, tr); err != nil {
+				outFile.Close()
 				return err
 			}
+			outFile.Close()
+		}
+	}
+
+	return flattenSingleFolder(dest)
+}
+
+// Flatten folder if it contains only a single folder
+func flattenSingleFolder(path string) error {
+	for {
+		entries, err := os.ReadDir(path)
+		if err != nil {
+			return err
+		}
+
+		// Only one entry and it's a folder
+		if len(entries) == 1 && entries[0].IsDir() {
+			innerPath := filepath.Join(path, entries[0].Name())
+			innerEntries, err := os.ReadDir(innerPath)
+			if err != nil {
+				return err
+			}
+
+			// Move all inner files/folders up
+			for _, e := range innerEntries {
+				oldPath := filepath.Join(innerPath, e.Name())
+				newPath := filepath.Join(path, e.Name())
+				if err := os.Rename(oldPath, newPath); err != nil {
+					return err
+				}
+			}
+
+			// Remove the now-empty folder
+			if err := os.Remove(innerPath); err != nil {
+				return err
+			}
+		} else {
+			break
 		}
 	}
 	return nil

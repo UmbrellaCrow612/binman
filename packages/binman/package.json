@@ -1,6 +1,6 @@
 {
   "name": "umbr-binman",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A util to download external binaries",
   "main": "index.js",
   "bin": {

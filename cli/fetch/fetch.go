@@ -13,8 +13,8 @@ import (
 	"github.com/UmbrellaCrow612/binman/cli/yml"
 )
 
-// FetchAndStoreBinary downloads all URLs of a binary and stores them under opts.Path/downloads
-// Fail-fast: exits on first error
+// FetchAndStoreBinary downloads all URLs of a binary and stores them under path/downloads/name/platform/.zip or .tar
+// Example path/downloads/fos/linux/fos_linux.zip
 func FetchAndStoreBinary(bin *yml.Binary, opts *args.Options) {
 	baseDir := filepath.Join(opts.Path, "downloads", bin.Name)
 	if err := os.MkdirAll(baseDir, os.ModePerm); err != nil {
@@ -23,22 +23,26 @@ func FetchAndStoreBinary(bin *yml.Binary, opts *args.Options) {
 
 	client := http.Client{Timeout: 20 * time.Second}
 
-	for osKey, url := range bin.URL {
-		printer.PrintSuccess(fmt.Sprintf("Fetching %s -> %s", osKey, url))
+	for platform, url := range bin.URL {
+		printer.PrintSuccess(fmt.Sprintf("Fetching %s -> %s", platform, url))
 
 		resp, err := client.Get(url)
 		if err != nil {
-			printer.ExitError(fmt.Sprintf("Failed to fetch %s URL for %s: %v", osKey, bin.Name, err))
+			printer.ExitError(fmt.Sprintf("Failed to fetch %s URL for %s: %v", platform, bin.Name, err))
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			printer.ExitError(fmt.Sprintf("Error fetching %s URL for %s (status: %d)", osKey, bin.Name, resp.StatusCode))
+			printer.ExitError(fmt.Sprintf("Error fetching %s URL for %s (status: %d)", platform, bin.Name, resp.StatusCode))
 		}
 
-		// Determine file path
+		platformDir := filepath.Join(baseDir, platform)
+		if err := os.MkdirAll(platformDir, os.ModePerm); err != nil {
+			printer.ExitError(fmt.Sprintf("Failed to create platform directory %s: %v", platformDir, err))
+		}
+
 		filename := filepath.Base(url)
-		filePath := filepath.Join(baseDir, filename)
+		filePath := filepath.Join(platformDir, filename)
 
 		out, err := os.Create(filePath)
 		if err != nil {
@@ -55,6 +59,6 @@ func FetchAndStoreBinary(bin *yml.Binary, opts *args.Options) {
 			printer.ExitError(fmt.Sprintf("Failed to close file %s: %v", filePath, err))
 		}
 
-		printer.PrintSuccess(fmt.Sprintf("Downloaded %s -> %s", osKey, filePath))
+		printer.PrintSuccess(fmt.Sprintf("Downloaded %s -> %s", platform, filePath))
 	}
 }

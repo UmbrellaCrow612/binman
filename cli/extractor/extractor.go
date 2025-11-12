@@ -11,10 +11,12 @@ import (
 	"strings"
 
 	"github.com/UmbrellaCrow612/binman/cli/args"
+	"github.com/UmbrellaCrow612/binman/cli/printer"
 )
 
 // Extract ZIP file to destination
 func extractZip(src, dest string) error {
+	printer.PrintSuccess(fmt.Sprintf("Extracting ZIP: %s -> %s", src, dest))
 	r, err := zip.OpenReader(src)
 	if err != nil {
 		return err
@@ -55,6 +57,7 @@ func extractZip(src, dest string) error {
 
 // Extract TAR.GZ file to destination
 func extractTarGz(src, dest string) error {
+	printer.PrintSuccess(fmt.Sprintf("Extracting TAR.GZ: %s -> %s", src, dest))
 	f, err := os.Open(src)
 	if err != nil {
 		return err
@@ -114,6 +117,7 @@ func ProcessDownloads(opts *args.Options) error {
 		}
 		folderName := entry.Name()
 		folderPath := filepath.Join(downloadsPath, folderName)
+		printer.PrintSuccess(fmt.Sprintf("Processing folder: %s", folderName))
 
 		platforms, err := os.ReadDir(folderPath)
 		if err != nil {
@@ -126,6 +130,7 @@ func ProcessDownloads(opts *args.Options) error {
 			}
 			platformName := platform.Name()
 			platformPath := filepath.Join(folderPath, platformName)
+			printer.PrintSuccess(fmt.Sprintf("Processing platform: %s", platformName))
 
 			files, err := os.ReadDir(platformPath)
 			if err != nil {
@@ -142,14 +147,16 @@ func ProcessDownloads(opts *args.Options) error {
 
 				if strings.HasSuffix(file.Name(), ".zip") {
 					if err := extractZip(srcFile, destDir); err != nil {
-						return fmt.Errorf("failed to extract zip %s: %w", srcFile, err)
+						printer.PrintError(fmt.Sprintf("Failed to extract ZIP: %s, error: %v", srcFile, err))
+						return err
 					}
 				} else if strings.HasSuffix(file.Name(), ".tar.gz") || strings.HasSuffix(file.Name(), ".tgz") {
 					if err := extractTarGz(srcFile, destDir); err != nil {
-						return fmt.Errorf("failed to extract tar.gz %s: %w", srcFile, err)
+						printer.PrintError(fmt.Sprintf("Failed to extract TAR.GZ: %s, error: %v", srcFile, err))
+						return err
 					}
 				} else {
-					fmt.Printf("Skipping unknown file type: %s\n", srcFile)
+					printer.PrintSuccess(fmt.Sprintf("Skipping unknown file type: %s", srcFile))
 				}
 			}
 		}

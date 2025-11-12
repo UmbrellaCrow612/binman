@@ -26,9 +26,9 @@ func Parse(opts *args.Options) *shared.Config {
 		printer.ExitError("Failed to parse YAML: " + err.Error())
 	}
 
-	printer.PrintSuccess("YAML file parsed successfully")
-
 	url.ResolveAllURLs(&cfg)
+
+	printer.PrintSuccess("YAML file parsed successfully")
 
 	return &cfg
 }

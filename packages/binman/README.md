@@ -145,3 +145,31 @@ Extracting TAR.GZ: C:\dev\binman\cli\downloads\ripgrep\linux\ripgrep-15.1.0-x86_
 Bin clean logic skipped
 Successfully removed downloads folder: C:\dev\binman\cli\downloads
 ```
+
+
+Bin folder
+
+```powershell
+Folder PATH listing for volume Windows
+Volume serial number is 124E-B996
+C:\DEV\BINMAN\CLI\BIN
+\---ripgrep
+    \---linux
+        |   COPYING
+        |   LICENSE-MIT
+        |   README.md
+        |   rg
+        |   UNLICENSE
+        |   
+        +---complete
+        |       rg.bash
+        |       rg.fish
+        |       _rg
+        |       _rg.ps1
+        |
+        \---doc
+                CHANGELOG.md
+                FAQ.md
+                GUIDE.md
+                rg.1
+```

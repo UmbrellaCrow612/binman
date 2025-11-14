@@ -39,90 +39,109 @@ binaries:
       linux: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
       darwin: 64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882
       windows: 124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d87493a
+    pattern:
+      linux: "^rg$"
+      darwin: "^rg$"
+      windows: "^rg\\.exe$"
 ```
+
+### Key-Value Placeholders
+
+Each binary can define as many key-value pairs as needed, such as `version`, `arch`, or custom variables.
+You can then use `{{key}}` placeholders in URLs, patterns, or other fields to dynamically replace them at runtime.
+
+For example, if you add a `platform` key:
+
+```yml
+binaries:
+  - name: mytool
+    version: 2.0.1
+    platform: x86_64
+    url:
+      linux: https://example.com/downloads/{{version}}/{{platform}}/mytool.tar.gz
+```
+
+When Umbr Binman processes this binary, it replaces `{{version}}` and `{{platform}}` with the values defined under the binary, producing the final URL:
+
+```
+https://example.com/downloads/2.0.1/x86_64/mytool.tar.gz
+```
+
+This makes it easy to manage multiple binaries, versions, or architectures without repeating URLs.
 
 ---
 
-## ▶️ Running Binman
+## 🛠️ CLI API
 
-### 🧰 Default (All Platforms)
-
-To download and extract binaries for all defined platforms:
+The CLI usage is as follows:
 
 ```bash
-npx binman .
+binman [path] [..flags..]
 ```
 
-Binman will:
-
-1. Parse your `binman.yml` configuration.
-2. Download binaries for **all supported platforms**.
-3. Verify their integrity via SHA256.
-4. Extract archives into the `bin/` directory.
-5. Clean up temporary downloads automatically.
-
----
-
-### 🧩 Specific Platform Builds
-
-You can also download binaries for **only one specific platform**, such as `linux`, `darwin`, or `windows`.
+For example:
 
 ```bash
-npx binman . linux
+binman .
 ```
 
-In this mode, Binman will:
+This resolves `.` to the current folder, finds the configuration file, downloads the binaries, and cleans them according to the specified `pattern`.
 
-1. Parse your configuration as usual.
-2. Check if each binary defines a URL for the `linux` platform.
-3. ❌ Exit with an error if any binary does **not** define the requested platform.
-4. ✅ Download, verify, and extract only the `linux` variant for each binary.
+### Flags
 
-Example Output:
+* `--no-clean`
+  Prevents automatic cleanup of downloaded binary folders. By default, files not matching the `pattern` regex for the platform are removed.
+  Example: using this flag keeps all files instead of cleaning them.
+
+* `--platform=<platform>`
+  Downloads and processes binaries only for the specified platform (`linux`, `darwin`, or `windows`).
+  Example: `--platform=linux` will only download and clean Linux binaries.
+
+
+# Example
+
+
+```yml
+binaries:
+  - name: ripgrep
+    version: 15.1.0
+    url:
+      linux: https://github.com/BurntSushi/ripgrep/releases/download/{{version}}/ripgrep-{{version}}-x86_64-unknown-linux-musl.tar.gz
+      darwin: https://github.com/BurntSushi/ripgrep/releases/download/{{version}}/ripgrep-{{version}}-x86_64-apple-darwin.tar.gz
+      windows: https://github.com/BurntSushi/ripgrep/releases/download/{{version}}/ripgrep-{{version}}-x86_64-pc-windows-msvc.zip
+    sha256:
+      linux: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
+      darwin: 64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882
+      windows: 124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d87493a
+    pattern:
+      linux: "^rg$"
+      darwin: "^rg$"
+      windows: "^rg\\.exe$"
+```
+
+## Building for linux
 
 ```bash
-npx binman . linux
-Resolved path: /home/user/dev/binman
-Found config file: /home/user/dev/binman/binman.yml
-YAML file parsed successfully
+binman . --no-clean --platform=linux
+```
+
+stdout
+
+```powershell
+Resolved path: C:\dev\binman\cli
+Found config file: C:\dev\binman\cli\binman.yml
+Skipping bin folder cleaning (--no-clean)
+Target platform: linux
 All URLs resolved successfully
-Processing platform: linux
+YAML file parsed successfully
+Successfully removed folder: C:\dev\binman\cli\bin
+Successfully removed folder: C:\dev\binman\cli\downloads
 Fetching linux -> https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-Downloaded linux -> /home/user/dev/binman/downloads/ripgrep/linux/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-SHA256 verified for linux binary
-Extracting linux binary...
-Successfully removed downloads folder.
+Downloaded linux -> C:\dev\binman\cli\downloads\ripgrep\linux\ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
+SHA256 verified for C:\dev\binman\cli\downloads\ripgrep\linux\ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
+Processing folder: ripgrep
+Processing platform: linux
+Extracting TAR.GZ: C:\dev\binman\cli\downloads\ripgrep\linux\ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz -> C:\dev\binman\cli\bin\ripgrep\linux
+Bin clean logic skipped
+Successfully removed downloads folder: C:\dev\binman\cli\downloads
 ```
-
-If the requested platform doesn’t exist for any binary, Binman will exit with a clear message:
-
-```bash
-❌ Binary 'ripgrep' does not define a URL for platform 'linux'
-```
-
----
-
-## 🧠 Why Use Umbr Binman?
-
-* ✅ **Cross-platform binary management** (Linux, macOS, Windows)
-* ✅ **Automatic checksum verification** (SHA256)
-* ✅ **Simplifies setup for CI/CD environments**
-* ✅ **Reproducible and versioned**
-* ✅ **No manual download or extraction steps**
-
----
-
-## 📂 Output Structure
-
-After running Binman, your project will contain:
-
-```
-bin/
-  ripgrep/
-    linux/
-    darwin/
-    windows/
-```
-
-Each folder contains the extracted binary files for the respective platform.
-When a specific platform is specified, only that platform’s folder will be created.

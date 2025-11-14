@@ -42,6 +42,11 @@ func CleanDownloads(opts *args.Options) {
 
 // Cleans downloaded bin folder based on pattern defined and removes empty folders
 func CleanBin(options *args.Options, compiledPatterns shared.CompiledPatterns) error {
+	if options.NoClean {
+		printer.PrintSuccess("Bin clean logic skipped")
+		return nil
+	}
+
 	binPath := filepath.Join(options.Path, "bin")
 	printer.PrintSuccess(fmt.Sprintf("Cleaning bin folder: %s", binPath))
 

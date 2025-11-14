@@ -18,6 +18,9 @@ type Options struct {
 
 	// Build only for a specific platform, defaults to empty meaning all
 	SpecificPlatformBuild string
+
+	// If it should run the clean logic i.e via the pattern regex for the platform
+	NoClean bool
 }
 
 // Parse args passed to the cli and get the options
@@ -26,6 +29,7 @@ func Parse() *Options {
 		Path:                  "",
 		PathToFile:            "",
 		SpecificPlatformBuild: "",
+		NoClean:               false,
 	}
 	setOptions(options)
 
@@ -72,6 +76,9 @@ func setOptions(options *Options) {
 				options.SpecificPlatformBuild = after
 				printer.PrintSuccess("Target platform: " + options.SpecificPlatformBuild)
 			}
+		case arg == "--no-clean":
+			options.NoClean = true
+			printer.PrintSuccess("Skipping bin folder cleaning (--no-clean)")
 		default:
 			printer.ExitError("Unknown flag: " + arg)
 		}

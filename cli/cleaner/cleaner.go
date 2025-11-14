@@ -40,7 +40,7 @@ func CleanDownloads(opts *args.Options) {
 	printer.PrintSuccess("Successfully removed downloads folder: " + downloadsPath)
 }
 
-// Cleans downoaded bin folder based on pattern defined
+// Cleans downloaded bin folder based on pattern defined and removes empty folders
 func CleanBin(options *args.Options, compiledPatterns shared.CompiledPatterns) error {
 	binPath := filepath.Join(options.Path, "bin")
 	printer.PrintSuccess(fmt.Sprintf("Cleaning bin folder: %s", binPath))
@@ -109,6 +109,25 @@ func CleanBin(options *args.Options, compiledPatterns shared.CompiledPatterns) e
 			})
 			if err != nil {
 				return fmt.Errorf("error cleaning platform folder %s: %w", platformFolder, err)
+			}
+
+			// Remove empty directories after cleaning
+			err = filepath.Walk(platformFolder, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if info.IsDir() {
+					// Try removing the directory if it's empty
+					dirEntries, _ := os.ReadDir(path)
+					if len(dirEntries) == 0 {
+						printer.PrintSuccess(fmt.Sprintf("Removing empty folder: %s", path))
+						return os.Remove(path)
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				return fmt.Errorf("error removing empty folders in %s: %w", platformFolder, err)
 			}
 		}
 	}

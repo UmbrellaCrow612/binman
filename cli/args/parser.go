@@ -3,6 +3,7 @@ package args
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/UmbrellaCrow612/binman/cli/printer"
 )
@@ -15,14 +16,16 @@ type Options struct {
 	// Path to the binman.yml config file
 	PathToFile string
 
-	// Build only for a specific platform
+	// Build only for a specific platform, defaults to empty meaning all
 	SpecificPlatformBuild string
 }
 
 // Parse args passed to the cli and get the options
 func Parse() *Options {
 	options := &Options{
-		Path: "",
+		Path:                  "",
+		PathToFile:            "",
+		SpecificPlatformBuild: "",
 	}
 	setOptions(options)
 
@@ -34,11 +37,10 @@ func setOptions(options *Options) {
 	args := os.Args[1:]
 
 	if len(args) == 0 {
-		printer.ExitError("Missing path argument. Usage: binman <path> [..options..]")
+		printer.ExitError("Missing path argument. Usage: binman <path> [..flags..]")
 	}
 
 	inputPath := args[0]
-
 	absPath, err := filepath.Abs(inputPath)
 	if err != nil {
 		printer.ExitError("Failed to resolve path: " + err.Error())
@@ -56,7 +58,6 @@ func setOptions(options *Options) {
 	printer.PrintSuccess("Resolved path: " + absPath)
 
 	configPath := filepath.Join(absPath, "binman.yml")
-
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		printer.ExitError("Missing required config file: " + configPath)
 	}
@@ -64,10 +65,15 @@ func setOptions(options *Options) {
 	options.PathToFile = configPath
 	printer.PrintSuccess("Found config file: " + configPath)
 
-	if len(args) > 1 {
-		options.SpecificPlatformBuild = args[1]
-		printer.PrintSuccess("Target platform: " + options.SpecificPlatformBuild)
-	} else {
-		options.SpecificPlatformBuild = ""
+	for _, arg := range args[1:] {
+		switch {
+		case strings.HasPrefix(arg, "--platform="):
+			if after, ok := strings.CutPrefix(arg, "--platform="); ok {
+				options.SpecificPlatformBuild = after
+				printer.PrintSuccess("Target platform: " + options.SpecificPlatformBuild)
+			}
+		default:
+			printer.ExitError("Unknown flag: " + arg)
+		}
 	}
 }

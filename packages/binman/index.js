@@ -3,7 +3,6 @@ const { spawn } = require("child_process");
 const path = require("path");
 const os = require("os");
 
-// Determine platform
 let binaryName;
 switch (os.platform()) {
   case "win32":
@@ -20,8 +19,9 @@ switch (os.platform()) {
     process.exit(1);
 }
 
-const binaryPath = path.join(__dirname, "bin", binaryName);
+const binaryPath = path.resolve(__dirname, "bin", binaryName);
 const args = process.argv.slice(2);
 
 const child = spawn(binaryPath, args, { stdio: "inherit" });
+
 child.on("exit", (code) => process.exit(code));

@@ -97,6 +97,6 @@ func VerifySHA256(filePath, expectedSHA string) error {
 		return fmt.Errorf("SHA256 mismatch for file %s: expected %s, got %s", filePath, expectedSHA, actualSHA)
 	}
 
-	fmt.Println("SHA256 verified for", filePath)
+	printer.PrintSuccess("SHA256 verified for " + filePath)
 	return nil
 }

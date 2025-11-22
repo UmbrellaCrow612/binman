@@ -77,7 +77,6 @@ func setOptions(options *Options) {
 			printer.PrintSuccess("Target platforms: " + strings.Join(options.SpecificPlatformBuilds, ", "))
 		case arg == "--no-clean":
 			options.NoClean = true
-			printer.PrintSuccess("Skipping bin folder cleaning (--no-clean)")
 		default:
 			printer.ExitError("Unknown flag: " + arg)
 		}

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+
+	"github.com/UmbrellaCrow612/binman/cli/args"
 )
 
 // Represents the binman.yml
@@ -12,7 +14,7 @@ type Config struct {
 }
 
 // Validate checks that the config has at least one binary and each binary is valid
-func (c *Config) Validate() error {
+func (c *Config) validate() error {
 	if len(c.Binaries) == 0 {
 		return errors.New("config must contain at least one binary")
 	}
@@ -105,6 +107,79 @@ func (b *Binary) Validate() error {
 		for arch, pattern := range arches {
 			if _, err := regexp.Compile(pattern); err != nil {
 				return fmt.Errorf("invalid pattern for binary '%s', platform '%s', architecture '%s': '%s' -> %w", b.NAME, platform, arch, pattern, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (c *Config) ValidateWithOptions(opts *args.Options) error {
+	if err := c.validate(); err != nil {
+		return err
+	}
+
+	if len(opts.SpecificPlatformBuilds) > 0 {
+		for _, bin := range c.Binaries {
+			for _, platform := range opts.SpecificPlatformBuilds {
+
+				// Check platform exists in URLs
+				if _, ok := bin.URLS[platform]; !ok {
+					return fmt.Errorf(
+						"binary '%s' does not define platform '%s' in urls",
+						bin.NAME, platform,
+					)
+				}
+
+				// Check platform exists in SHA256
+				if _, ok := bin.SHA256[platform]; !ok {
+					return fmt.Errorf(
+						"binary '%s' does not define platform '%s' in sha256",
+						bin.NAME, platform,
+					)
+				}
+			}
+		}
+	}
+
+	if len(opts.SpecificArchBuilds) > 0 {
+		for _, bin := range c.Binaries {
+
+			targetPlatforms := opts.SpecificPlatformBuilds
+			if len(targetPlatforms) == 0 {
+				for p := range bin.URLS {
+					targetPlatforms = append(targetPlatforms, p)
+				}
+			}
+
+			for _, platform := range targetPlatforms {
+				arches, ok := bin.URLS[platform]
+				if !ok {
+					return fmt.Errorf(
+						"binary '%s' missing platform '%s' in urls (required for architecture filtering)",
+						bin.NAME, platform,
+					)
+				}
+
+				for _, arch := range opts.SpecificArchBuilds {
+					// URLs
+					if _, ok := arches[arch]; !ok {
+						return fmt.Errorf(
+							"binary '%s' missing URL for platform '%s', architecture '%s'",
+							bin.NAME, platform, arch,
+						)
+					}
+
+					// SHA256
+					if _, ok := bin.SHA256[platform][arch]; !ok {
+						return fmt.Errorf(
+							"binary '%s' missing SHA256 for platform '%s', architecture '%s'",
+							bin.NAME, platform, arch,
+						)
+					}
+
+					// PATTERNS are optional — skip
+				}
 			}
 		}
 	}

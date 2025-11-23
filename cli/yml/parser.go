@@ -25,7 +25,7 @@ func Parse(opts *args.Options) *shared.Config {
 		printer.ExitError("Failed to parse YAML: " + err.Error())
 	}
 
-	err = cfg.Validate()
+	err = cfg.ValidateWithOptions(opts)
 	if err != nil {
 		printer.ExitError("Failed to parse YAML: " + err.Error())
 	}

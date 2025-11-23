@@ -26,6 +26,9 @@ func main() {
 	}
 
 	for _, bin := range config.Binaries {
-		extractor.CopyToBin(&bin, options)
+		err := extractor.CopyToBin(&bin, options)
+		if err != nil {
+			printer.ExitError(err.Error())
+		}
 	}
 }

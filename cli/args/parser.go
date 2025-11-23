@@ -16,8 +16,11 @@ type Options struct {
 	// Path to the binman.yml config file
 	PathToFile string
 
-	// Build only for a specific platform, defaults to empty meaning all
-	SpecificPlatformBuild string
+	// Build only specific platforms keys like [linux, windows] - defaults to empty
+	SpecificPlatformBuilds []string
+
+	// Build only for specific architectures [x86_64] - defaults to empty
+	SpecificArchBuilds []string
 
 	// If it should run the clean logic i.e via the pattern regex for the platform
 	NoClean bool
@@ -26,10 +29,11 @@ type Options struct {
 // Parse args passed to the cli and get the options
 func Parse() *Options {
 	options := &Options{
-		Path:                  "",
-		PathToFile:            "",
-		SpecificPlatformBuild: "",
-		NoClean:               false,
+		Path:                   "",
+		PathToFile:             "",
+		SpecificPlatformBuilds: []string{},
+		SpecificArchBuilds:     []string{},
+		NoClean:                false,
 	}
 	setOptions(options)
 
@@ -71,14 +75,16 @@ func setOptions(options *Options) {
 
 	for _, arg := range args[1:] {
 		switch {
-		case strings.HasPrefix(arg, "--platform="):
-			if after, ok := strings.CutPrefix(arg, "--platform="); ok {
-				options.SpecificPlatformBuild = after
-				printer.PrintSuccess("Target platform: " + options.SpecificPlatformBuild)
-			}
+		case strings.HasPrefix(arg, "--platforms="):
+			value := strings.TrimPrefix(arg, "--platforms=")
+			options.SpecificPlatformBuilds = strings.Split(value, ",")
+			printer.PrintSuccess("Target platforms: " + strings.Join(options.SpecificPlatformBuilds, ", "))
+		case strings.HasPrefix(arg, "--architectures="):
+			value := strings.TrimPrefix(arg, "--architectures=")
+			options.SpecificArchBuilds = strings.Split(value, ",")
+			printer.PrintSuccess("Target architectures: " + strings.Join(options.SpecificArchBuilds, ", "))
 		case arg == "--no-clean":
 			options.NoClean = true
-			printer.PrintSuccess("Skipping bin folder cleaning (--no-clean)")
 		default:
 			printer.ExitError("Unknown flag: " + arg)
 		}

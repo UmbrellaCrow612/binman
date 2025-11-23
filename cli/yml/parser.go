@@ -6,7 +6,6 @@ import (
 	"github.com/UmbrellaCrow612/binman/cli/args"
 	"github.com/UmbrellaCrow612/binman/cli/printer"
 	"github.com/UmbrellaCrow612/binman/cli/shared"
-	"github.com/UmbrellaCrow612/binman/cli/url"
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,12 +25,10 @@ func Parse(opts *args.Options) *shared.Config {
 		printer.ExitError("Failed to parse YAML: " + err.Error())
 	}
 
-	err = cfg.Validate()
+	err = cfg.ValidateWithOptions(opts)
 	if err != nil {
 		printer.ExitError("Failed to parse YAML: " + err.Error())
 	}
-
-	url.ResolveAllURLs(&cfg)
 
 	printer.PrintSuccess("YAML file parsed successfully")
 

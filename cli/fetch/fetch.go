@@ -8,101 +8,106 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
+	"slices"
+	"strings"
 
 	"github.com/UmbrellaCrow612/binman/cli/args"
 	"github.com/UmbrellaCrow612/binman/cli/printer"
 	"github.com/UmbrellaCrow612/binman/cli/shared"
 )
 
-func FetchAndStoreBinary(bin *shared.Binary, opts *args.Options) {
-	baseDir := filepath.Join(opts.Path, "downloads", bin.Name)
+// Fetches the binary urls into path/downloads
+// downloads all of them into the convention
+// opts.PATH/downloads/ripgrep/linux/x86_64/ripgrep.zip
+func FetchAndStoreBinary(bin *shared.Binary, opts *args.Options) error {
+
+	// Base dir becomes example downloads/ripgrep
+	baseDir := filepath.Join(opts.Path, "downloads", bin.NAME)
 	if err := os.MkdirAll(baseDir, os.ModePerm); err != nil {
-		printer.ExitError(fmt.Sprintf("Failed to create download directory: %v", err))
+		return fmt.Errorf("failed to create download directory: %w", err)
 	}
 
-	client := http.Client{Timeout: 20 * time.Second}
-
-	if opts.SpecificPlatformBuild != "" {
-		if _, ok := bin.URL[opts.SpecificPlatformBuild]; !ok {
-			printer.ExitError(fmt.Sprintf(
-				"Binary '%s' does not define a URL for platform '%s'",
-				bin.Name,
-				opts.SpecificPlatformBuild,
-			))
-		}
-	}
-
-	for platform, url := range bin.URL {
-		if opts.SpecificPlatformBuild != "" && platform != opts.SpecificPlatformBuild {
+	for platform, architectureAndUrl := range bin.URLS {
+		if len(opts.SpecificPlatformBuilds) > 0 &&
+			!slices.Contains(opts.SpecificPlatformBuilds, platform) {
+			printer.PrintSuccess("Skipping fetch " + platform)
 			continue
 		}
 
-		printer.PrintSuccess(fmt.Sprintf("Fetching %s -> %s", platform, url))
+		for architecture, url := range architectureAndUrl {
+			if len(opts.SpecificArchBuilds) > 0 && !slices.Contains(opts.SpecificArchBuilds, architecture) {
+				printer.PrintSuccess("Skipping fetch " + architecture)
+				continue
+			}
 
-		resp, err := client.Get(url)
-		if err != nil {
-			printer.ExitError(fmt.Sprintf("Failed to fetch %s URL for %s: %v", platform, bin.Name, err))
+			printer.PrintSuccess("Fetching " + url)
+
+			// Example: downloads/ripgrep/linux/x86_64
+			finalDir := filepath.Join(baseDir, platform, architecture)
+			if err := os.MkdirAll(finalDir, os.ModePerm); err != nil {
+				return fmt.Errorf("failed to create download directory: %w", err)
+			}
+
+			resp, err := http.Get(url)
+			if err != nil {
+				return fmt.Errorf("failed to fetch %s: %w", url, err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("failed to fetch %s: status %s", url, resp.Status)
+			}
+
+			// Determine filename from the URL
+			parts := strings.Split(url, "/")
+			fileName := parts[len(parts)-1]
+			filePath := filepath.Join(finalDir, fileName)
+
+			out, err := os.Create(filePath)
+			if err != nil {
+				return fmt.Errorf("failed to create file %s: %w", filePath, err)
+			}
+			defer out.Close()
+
+			if _, err := io.Copy(out, resp.Body); err != nil {
+				return fmt.Errorf("failed to write file %s: %w", filePath, err)
+			}
+
+			expectedSHA, ok := bin.SHA256[platform][architecture]
+			if !ok {
+				return fmt.Errorf("no SHA256 provided for %s/%s", platform, architecture)
+			}
+
+			if err := VerifySHA256(filePath, expectedSHA); err != nil {
+				return err
+			}
 		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			printer.ExitError(fmt.Sprintf("Error fetching %s URL for %s (status: %d)", platform, bin.Name, resp.StatusCode))
-		}
-
-		platformDir := filepath.Join(baseDir, platform)
-		if err := os.MkdirAll(platformDir, os.ModePerm); err != nil {
-			printer.ExitError(fmt.Sprintf("Failed to create platform directory %s: %v", platformDir, err))
-		}
-
-		filename := filepath.Base(url)
-		filePath := filepath.Join(platformDir, filename)
-
-		out, err := os.Create(filePath)
-		if err != nil {
-			printer.ExitError(fmt.Sprintf("Failed to create file %s: %v", filePath, err))
-		}
-
-		_, err = io.Copy(out, resp.Body)
-		if err != nil {
-			out.Close()
-			printer.ExitError(fmt.Sprintf("Failed to write file %s: %v", filePath, err))
-		}
-
-		if err := out.Close(); err != nil {
-			printer.ExitError(fmt.Sprintf("Failed to close file %s: %v", filePath, err))
-		}
-
-		printer.PrintSuccess(fmt.Sprintf("Downloaded %s -> %s", platform, filePath))
-
-		expectedSHA, ok := bin.SHA256[platform]
-		if !ok || expectedSHA == "" {
-			printer.ExitError(fmt.Sprintf("No SHA256 provided for %s on platform %s", bin.Name, platform))
-		}
-
-		if err := verifySHA256(filePath, expectedSHA); err != nil {
-			printer.ExitError(fmt.Sprintf("SHA256 verification failed for %s: %v", filePath, err))
-		}
-
-		printer.PrintSuccess(fmt.Sprintf("SHA256 verified for %s", filePath))
 	}
+
+	return nil
 }
 
-func verifySHA256(filePath, expected string) error {
-	f, err := os.Open(filePath)
+// Helper function to check SHA256 of a file
+func VerifySHA256(filePath, expectedSHA string) error {
+	file, err := os.Open(filePath)
 	if err != nil {
-		return fmt.Errorf("cannot open file: %v", err)
+		return fmt.Errorf("failed to open file %s: %w", filePath, err)
 	}
-	defer f.Close()
+	defer file.Close()
 
-	hash := sha256.New()
-	if _, err := io.Copy(hash, f); err != nil {
-		return fmt.Errorf("cannot compute hash: %v", err)
+	hasher := sha256.New()
+	if _, err := io.Copy(hasher, file); err != nil {
+		return fmt.Errorf("failed to hash file %s: %w", filePath, err)
 	}
 
-	actual := hex.EncodeToString(hash.Sum(nil))
-	if actual != expected {
-		return fmt.Errorf("hash mismatch: expected %s, got %s", expected, actual)
+	actualSHA := hex.EncodeToString(hasher.Sum(nil))
+	if actualSHA != expectedSHA {
+		return fmt.Errorf(
+			"SHA256 mismatch for %s: expected %s, got %s",
+			filePath, expectedSHA, actualSHA,
+		)
 	}
+
+	printer.PrintSuccess("SHA256 verified for " + filePath)
 	return nil
 }

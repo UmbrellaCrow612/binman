@@ -101,6 +101,14 @@ func (b *Binary) Validate() error {
 		return fmt.Errorf("binary '%s' must have at least one SHA256 checksum defined", b.NAME)
 	}
 
+	for platform, arches := range b.PATTERNS {
+		for arch, pattern := range arches {
+			if _, err := regexp.Compile(pattern); err != nil {
+				return fmt.Errorf("invalid pattern for binary '%s', platform '%s', architecture '%s': '%s' -> %w", b.NAME, platform, arch, pattern, err)
+			}
+		}
+	}
+
 	return nil
 }
 

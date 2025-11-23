@@ -16,31 +16,24 @@ func CopyToBin(binary *shared.Binary, options *args.Options) error {
 	baseDownloadDir := filepath.Join(options.Path, "downloads", binary.NAME)
 	baseBinDir := filepath.Join(options.Path, "bin", binary.NAME)
 
-	// Iterate over all expected platforms and architectures
 	for platform, archMap := range binary.URLS {
 		for arch := range archMap {
 			downloadArchDir := filepath.Join(baseDownloadDir, platform, arch)
 
-			// 1. Find the deepest directory that contains the actual files to copy
 			sourceContentDir, err := findContentDir(downloadArchDir)
 			if err != nil {
-				// If Stat fails (e.g., directory doesn't exist), return the error.
 				if os.IsNotExist(err) {
-					// You might want to skip this if a download wasn't expected,
-					// but for now, we treat a missing dir as an error.
 					continue
 				}
 				return err
 			}
 
-			// 2. Define and create the final destination directory
 			binArchDir := filepath.Join(baseBinDir, platform, arch)
 			err = os.MkdirAll(binArchDir, os.ModePerm)
 			if err != nil {
 				return err
 			}
 
-			// 3. Copy the CONTENTS of sourceContentDir into binArchDir
 			if err := copyDirContents(sourceContentDir, binArchDir); err != nil {
 				return err
 			}

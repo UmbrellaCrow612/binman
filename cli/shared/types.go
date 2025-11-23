@@ -96,17 +96,57 @@ func (b *Binary) Validate() error {
 	}
 
 	if len(b.URLS) == 0 {
-		return fmt.Errorf("binary '%s' must have at least one URL defined", b.NAME)
+		return fmt.Errorf("binary '%s' must define urls", b.NAME)
 	}
 
 	if len(b.SHA256) == 0 {
-		return fmt.Errorf("binary '%s' must have at least one SHA256 checksum defined", b.NAME)
+		return fmt.Errorf("binary '%s' must define sha256", b.NAME)
+	}
+
+	// Validate URLS <-> SHA256 consistency
+	for platform, archURLs := range b.URLS {
+		if len(archURLs) == 0 {
+			return fmt.Errorf("binary '%s' platform '%s' must define at least one architecture under urls", b.NAME, platform)
+		}
+
+		shaArchMap, ok := b.SHA256[platform]
+		if !ok {
+			return fmt.Errorf("binary '%s' missing sha256 definitions for platform '%s'", b.NAME, platform)
+		}
+
+		for arch := range archURLs {
+			if _, ok := shaArchMap[arch]; !ok {
+				return fmt.Errorf(
+					"binary '%s' missing sha256 for platform '%s', architecture '%s'",
+					b.NAME, platform, arch,
+				)
+			}
+		}
+	}
+
+	// Validate SHA256 doesn't define extra platforms/arches not in URLs
+	for platform, shaArchMap := range b.SHA256 {
+		if _, ok := b.URLS[platform]; !ok {
+			return fmt.Errorf("binary '%s' defines sha256 for platform '%s' but platform is missing in urls", b.NAME, platform)
+		}
+
+		for arch := range shaArchMap {
+			if _, ok := b.URLS[platform][arch]; !ok {
+				return fmt.Errorf(
+					"binary '%s' defines sha256 for platform '%s', architecture '%s' but it is missing in urls",
+					b.NAME, platform, arch,
+				)
+			}
+		}
 	}
 
 	for platform, arches := range b.PATTERNS {
 		for arch, pattern := range arches {
 			if _, err := regexp.Compile(pattern); err != nil {
-				return fmt.Errorf("invalid pattern for binary '%s', platform '%s', architecture '%s': '%s' -> %w", b.NAME, platform, arch, pattern, err)
+				return fmt.Errorf(
+					"invalid pattern for binary '%s', platform '%s', architecture '%s': '%s' -> %w",
+					b.NAME, platform, arch, pattern, err,
+				)
 			}
 		}
 	}

@@ -65,15 +65,20 @@ func Extract(options *args.Options) error {
 
 		case ".tar":
 			destDir := strings.TrimSuffix(m, ext)
-			if err := ExtractZip(m, destDir); err != nil {
+			if err := ExtractTar(m, destDir); err != nil {
 				return fmt.Errorf("failed to extract tar %s: %w", m, err)
 			}
 
 		case ".gz":
 			if strings.HasSuffix(lower, ".tar.gz") || strings.HasSuffix(lower, ".tgz") {
-				destDir := strings.TrimSuffix(strings.TrimSuffix(m, ".gz"), ".tar")
-				if err := ExtractZip(m, destDir); err != nil {
+				destDir := strings.TrimSuffix(strings.TrimSuffix(m, ".tar.gz"), ".tgz")
+				if err := ExtractTarGz(m, destDir); err != nil {
 					return fmt.Errorf("failed to extract tar.gz %s: %w", m, err)
+				}
+			} else {
+				destDir := strings.TrimSuffix(m, ext)
+				if err := ExtractGz(m, destDir); err != nil {
+					return fmt.Errorf("failed to extract gz %s: %w", m, err)
 				}
 			}
 

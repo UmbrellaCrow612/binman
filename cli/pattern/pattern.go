@@ -13,8 +13,7 @@ import (
 // Cleans a specific binarys bin with patterns defined for it
 func CleanWithPattern(bin *shared.Binary, options *args.Options) error {
 	baseBinDir := filepath.Join(options.Path, "bin", bin.NAME)
-	_, err := os.Stat(baseBinDir)
-	if err != nil {
+	if _, err := os.Stat(baseBinDir); err != nil {
 		return err
 	}
 
@@ -31,29 +30,46 @@ func CleanWithPattern(bin *shared.Binary, options *args.Options) error {
 			}
 
 			finalBinDir := filepath.Join(baseBinDir, platform, arch)
-			_, err := os.Stat(finalBinDir)
-			if err != nil {
+			if _, err := os.Stat(finalBinDir); err != nil {
 				return err
 			}
 
 			printer.PrintSuccess("Cleaning " + finalBinDir)
 
-			// Walk recursively
+			// Step 1: Delete files not matching regex
 			err = filepath.WalkDir(finalBinDir, func(path string, d os.DirEntry, walkErr error) error {
 				if walkErr != nil {
 					return walkErr
 				}
 
-				// Skip directories
 				if d.IsDir() {
 					return nil
 				}
 
-				// If file does not match pattern, remove it
 				if !regex.MatchString(d.Name()) {
 					if err := os.Remove(path); err != nil {
 						return fmt.Errorf("failed to remove file '%s': %w", path, err)
 					}
+				}
+
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+
+			// Step 2: Remove empty directories (walk bottom-up)
+			err = filepath.Walk(finalBinDir, func(path string, info os.FileInfo, walkErr error) error {
+				if walkErr != nil {
+					return walkErr
+				}
+
+				if !info.IsDir() {
+					return nil
+				}
+
+				if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+					// Ignore error if not empty
 				}
 
 				return nil

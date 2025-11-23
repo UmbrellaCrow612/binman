@@ -47,5 +47,5 @@ func main() {
 		printer.PrintSuccess("No clean enabled skipping clean")
 	}
 
-	// cleaner.CleanEnd(options)
+	cleaner.CleanEnd(options)
 }

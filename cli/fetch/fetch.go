@@ -30,13 +30,13 @@ func FetchAndStoreBinary(bin *shared.Binary, opts *args.Options) error {
 	for platform, architectureAndUrl := range bin.URLS {
 		if len(opts.SpecificPlatformBuilds) > 0 &&
 			!slices.Contains(opts.SpecificPlatformBuilds, platform) {
-			printer.PrintSuccess("Skipping fetch" + platform)
+			printer.PrintSuccess("Skipping fetch " + platform)
 			continue
 		}
 
 		for architecture, url := range architectureAndUrl {
 			if len(opts.SpecificArchBuilds) > 0 && !slices.Contains(opts.SpecificArchBuilds, architecture) {
-				printer.PrintSuccess("Skipping fetch" + architecture)
+				printer.PrintSuccess("Skipping fetch " + architecture)
 				continue
 			}
 

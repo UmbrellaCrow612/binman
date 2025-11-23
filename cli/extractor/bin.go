@@ -2,14 +2,17 @@ package extractor
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/UmbrellaCrow612/binman/cli/args"
 	"github.com/UmbrellaCrow612/binman/cli/shared"
 )
 
+// Flattens downloads and cops files over to bin
 func CopyToBin(bin *shared.Binary, options *args.Options) error {
 	baseDownloadDir := filepath.Join(options.Path, "downloads", bin.NAME)
 	binDir := filepath.Join(options.Path, "bin", bin.NAME)
@@ -19,10 +22,17 @@ func CopyToBin(bin *shared.Binary, options *args.Options) error {
 	}
 
 	for platform, archAndUrlMap := range bin.URLS {
+		if len(options.SpecificPlatformBuilds) > 0 && !slices.Contains(options.SpecificPlatformBuilds, platform) {
+			continue
+		}
+
 		for arch := range archAndUrlMap {
+			if len(options.SpecificArchBuilds) > 0 && !slices.Contains(options.SpecificArchBuilds, arch) {
+				continue
+			}
+
 			finalDownloadDir := filepath.Join(baseDownloadDir, platform, arch)
-			_, err := os.Stat(finalDownloadDir)
-			if err != nil {
+			if _, err := os.Stat(finalDownloadDir); os.IsNotExist(err) {
 				return fmt.Errorf("download folder %s not found", finalDownloadDir)
 			}
 
@@ -61,11 +71,39 @@ func CopyToBin(bin *shared.Binary, options *args.Options) error {
 					counter++
 				}
 
-				if err := os.Rename(srcPath, dstPath); err != nil {
-					return fmt.Errorf("failed to move file %s to %s: %w", srcPath, dstPath, err)
+				if err := copyFile(srcPath, dstPath); err != nil {
+					return fmt.Errorf("failed to copy file %s to %s: %w", srcPath, dstPath, err)
 				}
 			}
 		}
+	}
+
+	return nil
+}
+
+// copyFile copies a file from src to dst
+func copyFile(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	// Copy permissions
+	info, err := srcFile.Stat()
+	if err == nil {
+		os.Chmod(dst, info.Mode())
 	}
 
 	return nil

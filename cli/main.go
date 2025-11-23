@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/UmbrellaCrow612/binman/cli/args"
+	"github.com/UmbrellaCrow612/binman/cli/extractor"
 	"github.com/UmbrellaCrow612/binman/cli/fetch"
 	"github.com/UmbrellaCrow612/binman/cli/printer"
 	"github.com/UmbrellaCrow612/binman/cli/yml"
@@ -17,5 +18,10 @@ func main() {
 			printer.ExitError(err.Error())
 
 		}
+	}
+
+	err := extractor.Extract(options)
+	if err != nil {
+		printer.ExitError(err.Error())
 	}
 }

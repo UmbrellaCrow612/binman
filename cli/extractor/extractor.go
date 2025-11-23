@@ -1,54 +1,38 @@
 package extractor
 
 import (
-	"archive/tar"
-	"archive/zip"
-	"compress/gzip"
-	"io"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/UmbrellaCrow612/binman/cli/args"
-	"github.com/UmbrellaCrow612/binman/cli/printer"
 )
 
-// Will go to options.PATH/downloads and extract all the content to bin
-// Assumes downloads looks like
-// path/downloads/ripgrep/x86_64/ripgrep.zip
-func Extract(options *args.Options) {
-	downloads := filepath.Join(options.Path, "downloads")
-	bin := filepath.Join(options.Path, "bin")
-
-	// Ensure downloads exists
-	if _, err := os.Stat(downloads); err != nil {
-		printer.ExitError("downloads folder does not exist: " + err.Error())
+// getArchiveFolders walks through options.PATH/downloads and collects all archive files
+// Returns a slice of archive paths or an error if something goes wrong
+func getArchiveFolders(options *args.Options) ([]string, error) {
+	if options == nil || options.Path == "" {
+		return nil, fmt.Errorf("invalid options or PATH")
 	}
 
-	os.RemoveAll(bin)
-	if err := os.MkdirAll(bin, 0755); err != nil {
-		printer.ExitError("failed to create bin directory: " + err.Error())
-	}
-
+	downloadsPath := filepath.Join(options.Path, "downloads")
 	var archives []string
 
-	// Collect all archives in downloads
-	err := filepath.Walk(downloads, func(path string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(downloadsPath, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
-			return err
+			return fmt.Errorf("error accessing %s: %w", path, err)
 		}
 
-		if info.IsDir() {
+		if d.IsDir() {
 			return nil
 		}
 
-		lower := strings.ToLower(info.Name())
-
+		lower := strings.ToLower(d.Name())
 		if strings.HasSuffix(lower, ".zip") ||
+			strings.HasSuffix(lower, ".tar") ||
 			strings.HasSuffix(lower, ".tar.gz") ||
-			strings.HasSuffix(lower, ".tgz") ||
-			strings.HasSuffix(lower, ".tar") {
-
+			strings.HasSuffix(lower, ".tgz") {
 			archives = append(archives, path)
 		}
 
@@ -56,150 +40,47 @@ func Extract(options *args.Options) {
 	})
 
 	if err != nil {
-		printer.ExitError(err.Error())
+		return nil, err
 	}
 
-	// Extract each archive into matching bin path
-	for _, archive := range archives {
-		// Compute relative path inside downloads
-		rel, err := filepath.Rel(downloads, archive)
-		if err != nil {
-			printer.ExitError("failed to compute relative path: " + err.Error())
-		}
-
-		// Folder inside bin (excluding file name)
-		destDir := filepath.Dir(filepath.Join(bin, rel))
-		if err := os.MkdirAll(destDir, 0755); err != nil {
-			printer.ExitError("failed to create bin subdir: " + err.Error())
-		}
-
-		lower := strings.ToLower(archive)
-
-		switch {
-		case strings.HasSuffix(lower, ".zip"):
-			err = extractZipAndDeleteTo(archive, destDir)
-
-		case strings.HasSuffix(lower, ".tar.gz"), strings.HasSuffix(lower, ".tgz"):
-			err = extractTarGzAndDeleteTo(archive, destDir)
-
-		case strings.HasSuffix(lower, ".tar"):
-			err = extractTarAndDeleteTo(archive, destDir)
-		}
-
-		if err != nil {
-			printer.ExitError(err.Error())
-		}
-	}
+	return archives, nil
 }
 
-func extractZipAndDeleteTo(zipPath, dest string) error {
-	reader, err := zip.OpenReader(zipPath)
+func Extract(options *args.Options) error {
+	matches, err := getArchiveFolders(options)
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
 
-	for _, f := range reader.File {
-		extractPath := filepath.Join(dest, f.Name)
+	for _, m := range matches {
+		lower := strings.ToLower(m)
+		ext := filepath.Ext(lower)
 
-		if f.FileInfo().IsDir() {
-			if err := os.MkdirAll(extractPath, 0755); err != nil {
-				return err
+		switch ext {
+		case ".zip":
+			destDir := strings.TrimSuffix(m, ext)
+			if err := ExtractZip(m, destDir); err != nil {
+				return fmt.Errorf("failed to extract zip %s: %w", m, err)
 			}
-			continue
-		}
 
-		if err := os.MkdirAll(filepath.Dir(extractPath), 0755); err != nil {
-			return err
-		}
+		case ".tar":
+			destDir := strings.TrimSuffix(m, ext)
+			if err := ExtractZip(m, destDir); err != nil {
+				return fmt.Errorf("failed to extract tar %s: %w", m, err)
+			}
 
-		rc, err := f.Open()
-		if err != nil {
-			return err
-		}
+		case ".gz":
+			if strings.HasSuffix(lower, ".tar.gz") || strings.HasSuffix(lower, ".tgz") {
+				destDir := strings.TrimSuffix(strings.TrimSuffix(m, ".gz"), ".tar")
+				if err := ExtractZip(m, destDir); err != nil {
+					return fmt.Errorf("failed to extract tar.gz %s: %w", m, err)
+				}
+			}
 
-		out, err := os.Create(extractPath)
-		if err != nil {
-			rc.Close()
-			return err
-		}
-
-		_, err = io.Copy(out, rc)
-		rc.Close()
-		out.Close()
-
-		if err != nil {
-			return err
+		default:
+			return fmt.Errorf("unsupported archive type: %s\n", m)
 		}
 	}
 
-	return os.Remove(zipPath)
-}
-
-func extractTarGzAndDeleteTo(tarGzPath, dest string) error {
-	file, err := os.Open(tarGzPath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	gzReader, err := gzip.NewReader(file)
-	if err != nil {
-		return err
-	}
-	defer gzReader.Close()
-
-	return extractTarTo(dest, gzReader, tarGzPath)
-}
-
-func extractTarAndDeleteTo(tarPath, dest string) error {
-	file, err := os.Open(tarPath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	return extractTarTo(dest, file, tarPath)
-}
-
-func extractTarTo(dest string, reader io.Reader, deletePath string) error {
-	tarReader := tar.NewReader(reader)
-
-	for {
-		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		target := filepath.Join(dest, header.Name)
-
-		switch header.Typeflag {
-		case tar.TypeDir:
-			if err := os.MkdirAll(target, 0755); err != nil {
-				return err
-			}
-
-		case tar.TypeReg:
-			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
-				return err
-			}
-
-			out, err := os.Create(target)
-			if err != nil {
-				return err
-			}
-
-			_, err = io.Copy(out, tarReader)
-			out.Close()
-
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return os.Remove(deletePath)
+	return nil
 }

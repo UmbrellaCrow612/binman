@@ -19,64 +19,67 @@ import (
 // Fetches the binary urls into path/downloads
 // downloads all of them into the convention
 // opts.PATH/downloads/ripgrep/linux/x86_64/ripgrep.zip
-func FetchAndStoreBinary(bin *shared.Binary, opts *args.Options) {
+func FetchAndStoreBinary(bin *shared.Binary, opts *args.Options) error {
 
 	// Base dir becomes example downloads/ripgrep
 	baseDir := filepath.Join(opts.Path, "downloads", bin.NAME)
 	if err := os.MkdirAll(baseDir, os.ModePerm); err != nil {
-		printer.ExitError(fmt.Sprintf("Failed to create download directory: %v", err))
+		return fmt.Errorf("failed to create download directory: %w", err)
 	}
 
 	for platform, architectureAndUrl := range bin.URLS {
-		if len(opts.SpecificPlatformBuilds) > 0 && !slices.Contains(opts.SpecificPlatformBuilds, platform) {
+		if len(opts.SpecificPlatformBuilds) > 0 &&
+			!slices.Contains(opts.SpecificPlatformBuilds, platform) {
 			printer.PrintSuccess("Skipping " + platform)
 			continue
 		}
 
 		for architecture, url := range architectureAndUrl {
 			printer.PrintSuccess("Fetching " + url)
-			// Becomes for example downloads/ripgrep/linux/x86_64
+
+			// Example: downloads/ripgrep/linux/x86_64
 			finalDir := filepath.Join(baseDir, platform, architecture)
 			if err := os.MkdirAll(finalDir, os.ModePerm); err != nil {
-				printer.ExitError(fmt.Sprintf("Failed to create download directory: %v", err))
+				return fmt.Errorf("failed to create download directory: %w", err)
 			}
 
 			resp, err := http.Get(url)
 			if err != nil {
-				printer.ExitError("Failed to fetch " + url + err.Error())
+				return fmt.Errorf("failed to fetch %s: %w", url, err)
 			}
 			defer resp.Body.Close()
 
 			if resp.StatusCode != http.StatusOK {
-				printer.ExitError(fmt.Sprintf("Failed to fetch %s: status %s", url, resp.Status))
+				return fmt.Errorf("failed to fetch %s: status %s", url, resp.Status)
 			}
 
-			// Determine filename from URL
+			// Determine filename from the URL
 			parts := strings.Split(url, "/")
-			fileName := parts[len(parts)-1] // e.g., ripgrep.zip
+			fileName := parts[len(parts)-1]
 			filePath := filepath.Join(finalDir, fileName)
 
 			out, err := os.Create(filePath)
 			if err != nil {
-				printer.ExitError(fmt.Sprintf("Failed to create file %s: %v", filePath, err))
+				return fmt.Errorf("failed to create file %s: %w", filePath, err)
 			}
 			defer out.Close()
 
-			_, err = io.Copy(out, resp.Body)
-			if err != nil {
-				printer.ExitError(fmt.Sprintf("Failed to write file %s: %v", filePath, err))
+			if _, err := io.Copy(out, resp.Body); err != nil {
+				return fmt.Errorf("failed to write file %s: %w", filePath, err)
 			}
 
 			expectedSHA, ok := bin.SHA256[platform][architecture]
 			if !ok {
-				printer.ExitError(fmt.Sprintf("No SHA256 provided for %s/%s", platform, architecture))
+				return fmt.Errorf("no SHA256 provided for %s/%s", platform, architecture)
 			}
 
 			if err := VerifySHA256(filePath, expectedSHA); err != nil {
-				printer.ExitError(err.Error())
+				return err
 			}
 		}
 	}
+
+	return nil
 }
 
 // Helper function to check SHA256 of a file
@@ -94,7 +97,10 @@ func VerifySHA256(filePath, expectedSHA string) error {
 
 	actualSHA := hex.EncodeToString(hasher.Sum(nil))
 	if actualSHA != expectedSHA {
-		return fmt.Errorf("SHA256 mismatch for file %s: expected %s, got %s", filePath, expectedSHA, actualSHA)
+		return fmt.Errorf(
+			"SHA256 mismatch for %s: expected %s, got %s",
+			filePath, expectedSHA, actualSHA,
+		)
 	}
 
 	printer.PrintSuccess("SHA256 verified for " + filePath)

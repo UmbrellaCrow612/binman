@@ -70,3 +70,30 @@ C:.
         └───x86_64
 PS C:\dev\binman\cli\bin> 
 ```
+
+Example binman.yml
+
+```yml
+binaries:
+  - name: ripgrep
+    urls:
+      linux:
+        x86_64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
+        aarch64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz
+      windows:
+        x86_64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip
+
+    sha256:
+      linux:
+        x86_64: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
+        aarch64: 2b661c6ef508e902f388e9098d9c4c5aca72c87b55922d94abdba830b4dc885e
+      windows:
+        x86_64: 0bf217086ecb1392070020810b888bd405cb1dd5f088c16c45d9de1e5ea6b638
+
+    patterns:
+      linux:
+        x86_64: "^rg$"
+        aarch64: "^rg$"
+      windows:
+        x86_64: "^rg\\.exe$"
+```

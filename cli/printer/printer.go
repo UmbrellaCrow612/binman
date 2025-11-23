@@ -24,6 +24,12 @@ func PrintError(msg string) {
 	red.Fprintf(os.Stderr, "[%s] ERROR: %s\n", getTimestamp(), msg)
 }
 
+// PrintWarning prints a warning message in yellow to stdout with timestamp.
+func PrintWarning(msg string) {
+	yellow := color.New(color.FgYellow)
+	yellow.Fprintf(os.Stdout, "[%s] WARNING: %s\n", getTimestamp(), msg)
+}
+
 // ExitSuccess prints a success message and exits with code 0.
 func ExitSuccess(msg string) {
 	PrintSuccess(msg)

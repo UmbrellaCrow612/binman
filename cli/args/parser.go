@@ -19,6 +19,9 @@ type Options struct {
 	// Build only specific platforms keys like [linux, windows] - defaults to empty
 	SpecificPlatformBuilds []string
 
+	// Build only for specific architectures [x86_64] - defaults to empty
+	SpecificArchBuilds []string
+
 	// If it should run the clean logic i.e via the pattern regex for the platform
 	NoClean bool
 }
@@ -29,6 +32,7 @@ func Parse() *Options {
 		Path:                   "",
 		PathToFile:             "",
 		SpecificPlatformBuilds: []string{},
+		SpecificArchBuilds:     []string{},
 		NoClean:                false,
 	}
 	setOptions(options)
@@ -75,6 +79,10 @@ func setOptions(options *Options) {
 			value := strings.TrimPrefix(arg, "--platforms=")
 			options.SpecificPlatformBuilds = strings.Split(value, ",")
 			printer.PrintSuccess("Target platforms: " + strings.Join(options.SpecificPlatformBuilds, ", "))
+		case strings.HasPrefix(arg, "--architectures="):
+			value := strings.TrimPrefix(arg, "--architectures=")
+			options.SpecificArchBuilds = strings.Split(value, ",")
+			printer.PrintSuccess("Target architectures: " + strings.Join(options.SpecificArchBuilds, ", "))
 		case arg == "--no-clean":
 			options.NoClean = true
 		default:

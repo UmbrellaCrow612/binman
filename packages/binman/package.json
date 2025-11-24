@@ -1,10 +1,10 @@
 {
   "name": "umbr-binman",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A utility to download, verify, and extract external binaries from configuration files.",
   "main": "index.js",
   "bin": {
-    "binman": "index.js"
+    "binman": "cli.js"
   },
   "scripts": {
     "postinstall": "node scripts/set-perms.js"
@@ -40,6 +40,7 @@
   },
   "files": [
     "index.js",
+    "cli.js",
     "bin/",
     "scripts/",
     "README.md"

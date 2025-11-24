@@ -1,20 +1,28 @@
-const os = require('os');
-const path = require('path');
-const { execSync } = require('child_process');
+const os = require("os");
+const path = require("path");
+const { execSync } = require("child_process");
+const fs = require("fs");
 
-const platform = os.platform();
+const rootBin = path.resolve(__dirname, "..", "bin");
 
-if (platform !== 'win32') {
-    const binPath = path.resolve(__dirname, '..', 'bin');
-    
-    try {
-        execSync(`chmod +x ${binPath}/*`, { stdio: 'inherit' });
-        console.log('[umbr-binman] Successfully set executable permissions.');
-    } catch (e) {
-        // If chmod fails for some reason, log the error but don't stop installation
-        console.error(`[umbr-binman] WARNING: Failed to set executable permissions using chmod.`, e.message);
-        // Do not process.exit(1) here as we don't want to fail the npm installation
+function chmodRecursive(/** @type {string}*/ dir) {
+  for (const entry of fs.readdirSync(dir)) {
+    const full = path.join(dir, entry);
+    const stats = fs.statSync(full);
+
+    if (stats.isDirectory()) {
+      chmodRecursive(full);
+    } else {
+      try {
+        execSync(`chmod +x "${full}"`);
+      } catch (/** @type {any}*/ e) {
+        console.error(`[umbr-binman] Failed chmod for`, full, e.message);
+      }
     }
-} else {
-    console.log(`[umbr-binman] Running on Windows, skipping executable permission assignment.`);
+  }
+}
+
+if (os.platform() !== "win32") {
+  chmodRecursive(rootBin);
+  console.log("[umbr-binman] Executable permissions applied recursively.");
 }

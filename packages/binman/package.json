@@ -1,6 +1,6 @@
 {
   "name": "umbr-binman",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A utility to download, verify, and extract external binaries from configuration files.",
   "main": "index.js",
   "bin": {

@@ -95,6 +95,63 @@ func (b *Binary) Validate() error {
 		return errors.New("binary name cannot be empty")
 	}
 
+	validPlatforms := map[string]bool{
+		"linux":   true,
+		"windows": true,
+		"darwin":  true,
+	}
+
+	validArchs := map[string]bool{
+		"x86_64":  true,
+		"amd64":   true,
+		"arm64":   true,
+		"aarch64": true,
+		"armv7":   true,
+		"armv6":   true,
+		"i386":    true,
+		"386":     true,
+	}
+
+	// Convert valid lists to strings for readable error messages
+	validPlatformList := make([]string, 0, len(validPlatforms))
+	for p := range validPlatforms {
+		validPlatformList = append(validPlatformList, p)
+	}
+
+	validArchList := make([]string, 0, len(validArchs))
+	for a := range validArchs {
+		validArchList = append(validArchList, a)
+	}
+
+	// Validate all platforms + arches in URLS
+	for platform, archMap := range b.URLS {
+
+		if !validPlatforms[platform] {
+			return fmt.Errorf(
+				"binary '%s' defines invalid platform '%s'. valid platforms: %v",
+				b.NAME, platform, validPlatformList,
+			)
+		}
+
+		if len(archMap) == 0 {
+			return fmt.Errorf(
+				"binary '%s' platform '%s' must define at least one architecture",
+				b.NAME, platform,
+			)
+		}
+
+		for arch := range archMap {
+			if !validArchs[arch] {
+				return fmt.Errorf(
+					"binary '%s' defines invalid architecture '%s' under platform '%s'. valid architectures: %v",
+					b.NAME, arch, platform, validArchList,
+				)
+			}
+		}
+	}
+
+	// --- everything below is unchanged ---
+
 	if len(b.URLS) == 0 {
 		return fmt.Errorf("binary '%s' must define urls", b.NAME)
 	}
@@ -103,12 +160,7 @@ func (b *Binary) Validate() error {
 		return fmt.Errorf("binary '%s' must define sha256", b.NAME)
 	}
 
-	// Validate URLS <-> SHA256 consistency
 	for platform, archURLs := range b.URLS {
-		if len(archURLs) == 0 {
-			return fmt.Errorf("binary '%s' platform '%s' must define at least one architecture under urls", b.NAME, platform)
-		}
-
 		shaArchMap, ok := b.SHA256[platform]
 		if !ok {
 			return fmt.Errorf("binary '%s' missing sha256 definitions for platform '%s'", b.NAME, platform)
@@ -124,24 +176,38 @@ func (b *Binary) Validate() error {
 		}
 	}
 
-	// Validate SHA256 doesn't define extra platforms/arches not in URLs
 	for platform, shaArchMap := range b.SHA256 {
 		if _, ok := b.URLS[platform]; !ok {
-			return fmt.Errorf("binary '%s' defines sha256 for platform '%s' but platform is missing in urls", b.NAME, platform)
+			return fmt.Errorf("binary '%s' defines sha256 for platform '%s' but missing in urls", b.NAME, platform)
 		}
 
 		for arch := range shaArchMap {
 			if _, ok := b.URLS[platform][arch]; !ok {
 				return fmt.Errorf(
-					"binary '%s' defines sha256 for platform '%s', architecture '%s' but it is missing in urls",
+					"binary '%s' defines sha256 for platform '%s', architecture '%s' but missing in urls",
 					b.NAME, platform, arch,
 				)
 			}
 		}
 	}
 
+	// Validate patterns (regex)
 	for platform, arches := range b.PATTERNS {
+		if !validPlatforms[platform] {
+			return fmt.Errorf(
+				"patterns: invalid platform '%s'. valid platforms: %v",
+				platform, validPlatformList,
+			)
+		}
+
 		for arch, pattern := range arches {
+			if !validArchs[arch] {
+				return fmt.Errorf(
+					"patterns: invalid architecture '%s' for platform '%s'. valid architectures: %v",
+					arch, platform, validArchList,
+				)
+			}
+
 			if _, err := regexp.Compile(pattern); err != nil {
 				return fmt.Errorf(
 					"invalid pattern for binary '%s', platform '%s', architecture '%s': '%s' -> %w",

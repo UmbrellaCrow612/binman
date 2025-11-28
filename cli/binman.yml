@@ -1,22 +1,35 @@
 binaries:
-  - name: ripgrep
+  - name: 7zip
     urls:
-      linux:
-        x86_64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-        aarch64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz
       windows:
-        x86_64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip
+        x86_64: https://github.com/ip7z/7zip/releases/download/25.01/7z2501.exe
+        arm64: https://github.com/ip7z/7zip/releases/download/25.01/7z2501-arm64.exe
+      linux:
+        x86_64: https://github.com/ip7z/7zip/releases/download/25.01/7z2501-linux-x64.tar.xz
+        arm64: https://github.com/ip7z/7zip/releases/download/25.01/7z2501-linux-arm64.tar.xz
+      darwin:
+        x86_64: https://github.com/ip7z/7zip/releases/download/25.01/7z2501-mac.tar.xz
+        arm64: https://github.com/ip7z/7zip/releases/download/25.01/7z2501-mac.tar.xz
 
     sha256:
-      linux:
-        x86_64: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
-        aarch64: 2b661c6ef508e902f388e9098d9c4c5aca72c87b55922d94abdba830b4dc885e
       windows:
-        x86_64: 0bf217086ecb1392070020810b888bd405cb1dd5f088c16c45d9de1e5ea6b638
-
+        x86_64: b96831eec5928384f0543d6b57c1f802952a0f2668e662882c0a785a2b52fb3b
+        arm64: 6365c7c44e217b9c1009e065daf9f9aa37454e64315b4aaa263f7f8f060755dc
+      linux:
+        x86_64: 4ca3b7c6f2f67866b92622818b58233dc70367be2f36b498eb0bdeaaa44b53f4
+        arm64: 39c5140f02ce4436599303c59a149f654cb1bbc47cdc105a942120d747ae040d
+      darwin:
+        x86_64: 26aa75bc262bb10bf0805617b95569c3035c2c590a99f7db55c7e9607b2685e0
+        arm64: 26aa75bc262bb10bf0805617b95569c3035c2c590a99f7db55c7e9607b2685e0
+    
     patterns:
-      linux:
-        x86_64: "^rg$"
-        aarch64: "^rg$"
       windows:
-        x86_64: "^rg\\.exe$"
+        x86_64: "^7z2501_1\\.exe$"
+        arm64: "^7z2501-arm64_1\\.exe$"
+      linux:
+        x86_64: "^7zz_1$"
+        arm64: "^7zz_1$"
+      darwin:
+        x86_64: "^7zz_1$"
+        arm64: "^7zz_1$"
+    

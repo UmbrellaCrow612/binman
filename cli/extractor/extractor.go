@@ -10,7 +10,7 @@ import (
 	"github.com/UmbrellaCrow612/binman/cli/args"
 )
 
-var supportedArchiveFormats = []string{".zip", ".tar", ".gz"}
+var supportedArchiveFormats = []string{".zip", ".tar", ".gz", ".xz"}
 
 // Gets all folders which are archive
 func GetAllArchiveFiles(basePath string) ([]string, error) {
@@ -74,6 +74,8 @@ func Extract(options *args.Options) error {
 			extractError = extractTar(path)
 		case ".gz":
 			extractError = extractTarGz(path)
+		case ".xz":
+			extractError = extractTarXzExternal(path)
 		default:
 			extractError = fmt.Errorf("Unsupported  format %s ", ext)
 		}

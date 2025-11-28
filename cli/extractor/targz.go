@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"archive/tar"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
@@ -9,9 +10,10 @@ import (
 	"strings"
 )
 
-func extractTar(tarPath string) error {
+// ExtractTarGz extracts a .tar.gz file to the same directory as the archive
+func extractTarGz(tarGzPath string) error {
 	// Validate file exists
-	info, err := os.Stat(tarPath)
+	info, err := os.Stat(tarGzPath)
 	if err != nil {
 		return fmt.Errorf("file does not exist: %w", err)
 	}
@@ -19,23 +21,30 @@ func extractTar(tarPath string) error {
 		return fmt.Errorf("path is a directory, not a file")
 	}
 
-	// Validate .tar extension
-	if strings.ToLower(filepath.Ext(tarPath)) != ".tar" {
-		return fmt.Errorf("file is not a .tar archive")
+	// Validate .tar.gz extension
+	if !strings.HasSuffix(strings.ToLower(tarGzPath), ".tar.gz") {
+		return fmt.Errorf("file is not a .tar.gz archive")
 	}
 
-	// Open the tar file
-	file, err := os.Open(tarPath)
+	// Open the tar.gz file
+	file, err := os.Open(tarGzPath)
 	if err != nil {
-		return fmt.Errorf("failed to open tar file: %w", err)
+		return fmt.Errorf("failed to open file: %w", err)
 	}
 	defer file.Close()
 
-	// Create a tar reader
-	tr := tar.NewReader(file)
+	// Create a gzip reader
+	gzr, err := gzip.NewReader(file)
+	if err != nil {
+		return fmt.Errorf("failed to create gzip reader: %w", err)
+	}
+	defer gzr.Close()
 
-	// Extract files to the same directory as tar
-	destDir := filepath.Dir(tarPath)
+	// Create a tar reader
+	tr := tar.NewReader(gzr)
+
+	// Extract files to the same directory as tar.gz
+	destDir := filepath.Dir(tarGzPath)
 
 	for {
 		header, err := tr.Next()

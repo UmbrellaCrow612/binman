@@ -97,3 +97,5 @@ binaries:
       windows:
         x86_64: "^rg\\.exe$"
 ```
+
+Define cpu arhcectures as `x86_64` or `arm64` any other alias name is not allowed if they are the same don't use the alias version switch to one of these

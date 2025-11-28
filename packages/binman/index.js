@@ -26,21 +26,46 @@ async function binmanResolve(packageName, exeNames, basePath) {
     return undefined;
   }
 
-  // Determine OS
-  let os = process.platform === "win32" ? "windows" : process.platform;
+  // Determine OS (normalize Linux/Darwin/Windows)
+  let os;
+  switch (process.platform) {
+    case "win32":
+      os = "windows";
+      break;
+    case "darwin":
+      os = "darwin";
+      break;
+    case "linux":
+      os = "linux";
+      break;
+    default:
+      os = process.platform;
+      break;
+  }
 
-  // Determine architecture
-  let arch = "";
-  switch (process.arch) {
+  let arch;
+  switch (process.arch.toString()) {
     case "x64":
+    case "amd64":
       arch = "x86_64";
       break;
-    case "arm64":
-      arch = "aarch64";
+
+    case "arm64": 
+    case "aarch64": 
+      arch = "arm64";
       break;
+
     case "ia32":
-      arch = "i386";
-      break;
+    case "x32":
+    case "arm":
+    case "armv7l":
+    case "armv6l":
+    case "ppc64":
+    case "ppc64le":
+    case "s390x":
+    case "mips":
+    case "mips64":
+    case "riscv64":
     default:
       arch = process.arch;
       break;

@@ -86,7 +86,7 @@ type Binary struct {
 
 	// EXTRA captures any other key-value pairs in the YAML that are not explicitly mapped.
 	// For example, version: "1.2.3" would go here.
-	EXTRA map[string]interface{} `yaml:",inline"`
+	EXTRA map[string]any `yaml:",inline"`
 }
 
 // Validate checks that the binary has required fields
@@ -102,15 +102,9 @@ func (b *Binary) Validate() error {
 	}
 
 	validArchs := map[string]bool{
-		"x86_64":  true,
-		"amd64":   true,
-		"arm64":   true,
-		"aarch64": true,
-		"armv7":   true,
-		"armv6":   true,
-		"i386":    true,
-		"386":     true,
-	}
+		"x86_64": true,
+		"arm64":  true,
+	} // any other is a alias to this, for now no legacy ones
 
 	// Convert valid lists to strings for readable error messages
 	validPlatformList := make([]string, 0, len(validPlatforms))

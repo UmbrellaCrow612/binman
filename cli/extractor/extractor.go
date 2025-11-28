@@ -2,40 +2,50 @@ package extractor
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
+	"slices"
 
 	"github.com/UmbrellaCrow612/binman/cli/args"
 )
 
-// getArchiveFolders walks through options.PATH/downloads and collects all archive files
-// Returns a slice of archive paths or an error if something goes wrong
-func getArchiveFolders(options *args.Options) ([]string, error) {
-	if options == nil || options.Path == "" {
-		return nil, fmt.Errorf("invalid options or PATH")
+var supportedArchiveFormats = []string{".zip", ".tar", ".gz", ".xz"}
+
+// Gets all folders which are archive
+func GetAllArchiveFiles(basePath string) ([]string, error) {
+	downloadPath := filepath.Join(basePath, "downloads")
+	var foundPaths []string
+
+	_, err := os.Stat(downloadPath)
+	if err != nil {
+		return nil, err
 	}
 
-	downloadsPath := filepath.Join(options.Path, "downloads")
-	var archives []string
-
-	err := filepath.WalkDir(downloadsPath, func(path string, d os.DirEntry, err error) error {
+	err = filepath.WalkDir(downloadPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return fmt.Errorf("error accessing %s: %w", path, err)
+			return err
 		}
 
 		if d.IsDir() {
 			return nil
 		}
 
-		lower := strings.ToLower(d.Name())
-		if strings.HasSuffix(lower, ".zip") ||
-			strings.HasSuffix(lower, ".tar") ||
-			strings.HasSuffix(lower, ".tar.gz") ||
-			strings.HasSuffix(lower, ".tgz") {
-			archives = append(archives, path)
+		extension := filepath.Ext(d.Name())
+		if extension == "" {
+			return nil
 		}
 
+		if !slices.Contains(supportedArchiveFormats, extension) {
+			return nil
+		}
+
+		fullPath, err := filepath.Abs(path)
+		if err != nil {
+			return err
+		}
+
+		foundPaths = append(foundPaths, fullPath)
 		return nil
 	})
 
@@ -43,47 +53,35 @@ func getArchiveFolders(options *args.Options) ([]string, error) {
 		return nil, err
 	}
 
-	return archives, nil
+	return foundPaths, nil
 }
 
+// Extract all downloads
 func Extract(options *args.Options) error {
-	matches, err := getArchiveFolders(options)
+	archPaths, err := GetAllArchiveFiles(options.Path)
 	if err != nil {
 		return err
 	}
 
-	for _, m := range matches {
-		lower := strings.ToLower(m)
-		ext := filepath.Ext(lower)
+	for _, path := range archPaths {
+		ext := filepath.Ext(path)
+		var extractError error
 
 		switch ext {
 		case ".zip":
-			destDir := strings.TrimSuffix(m, ext)
-			if err := ExtractZip(m, destDir); err != nil {
-				return fmt.Errorf("failed to extract zip %s: %w", m, err)
-			}
-
+			extractError = unZip(path)
 		case ".tar":
-			destDir := strings.TrimSuffix(m, ext)
-			if err := ExtractTar(m, destDir); err != nil {
-				return fmt.Errorf("failed to extract tar %s: %w", m, err)
-			}
-
+			extractError = extractTar(path)
 		case ".gz":
-			if strings.HasSuffix(lower, ".tar.gz") || strings.HasSuffix(lower, ".tgz") {
-				destDir := strings.TrimSuffix(strings.TrimSuffix(m, ".tar.gz"), ".tgz")
-				if err := ExtractTarGz(m, destDir); err != nil {
-					return fmt.Errorf("failed to extract tar.gz %s: %w", m, err)
-				}
-			} else {
-				destDir := strings.TrimSuffix(m, ext)
-				if err := ExtractGz(m, destDir); err != nil {
-					return fmt.Errorf("failed to extract gz %s: %w", m, err)
-				}
-			}
-
+			extractError = extractTarGz(path)
+		case ".xz":
+			extractError = extractTarXzExternal(path)
 		default:
-			return fmt.Errorf("unsupported archive type: %s\n", m)
+			extractError = fmt.Errorf("Unsupported  format %s ", ext)
+		}
+
+		if extractError != nil {
+			return extractError
 		}
 	}
 

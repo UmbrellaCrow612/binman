@@ -50,18 +50,12 @@ async function binmanResolve(packageName, exeName, basePath) {
     case "win32":
       os = "windows";
       break;
-    case "darwin":
-      os = "darwin";
-      break;
-    case "linux":
-      os = "linux";
-      break;
     default:
       os = process.platform;
       break;
   }
 
-  let arch = ""
+  let arch = "";
   switch (process.arch) {
     case "x64":
       arch = "x86_64";
@@ -87,7 +81,7 @@ async function binmanResolve(packageName, exeName, basePath) {
 
   const files = await fs.readdir(targetDir);
 
-  const match = files.find(f => f === exeFileName);
+  const match = files.find((f) => f === exeFileName);
   if (!match) return undefined;
 
   return path.join(targetDir, match);

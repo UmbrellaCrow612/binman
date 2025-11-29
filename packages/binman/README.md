@@ -1,6 +1,6 @@
 # umbr-binman
 
-A cross-platform utility to download, verify, and extract external binaries into a central `bin` folder using a YAML configuration file.  
+A cross-platform utility to download, verify, and extract external binaries into a central `bin` folder using a YAML configuration file.
 This package wraps the `binman` CLI for seamless integration in Node.js projects.
 
 ---
@@ -21,7 +21,7 @@ After installation, you can run the CLI using:
 npx binman <path-to-config> [flags]
 ```
 
-Example
+Example:
 
 ```bash
 npx binman .
@@ -36,7 +36,7 @@ npx binman .
 ### Example
 
 ```bash
-npx binman . --platforms=linux,windows --architectures=x86_64
+npx binman . --platforms=linux,windows --architectures=x64
 ```
 
 Output:
@@ -59,7 +59,7 @@ Output:
 
 ## Folder Conventions
 
-### Download folder
+### Downloads folder
 
 ```
 downloads/<package-name>/<platform>/<architecture>/<source-file>
@@ -85,27 +85,40 @@ bin/ripgrep/
 
 ## Example `binman.yml`
 
+Valid platforms are `windows`, `linux`, or `darwin` for now.
+
+Valid architecture keys are those found in Node's `process.arch`. Only valid keys are permitted — alias names such as `x86_64` are not allowed. For example, use `x64` instead of the alias.
+
 ```yaml
 binaries:
   - name: ripgrep
     urls:
       linux:
-        x86_64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-        aarch64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz
+        x64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
       windows:
-        x86_64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip
+        x64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip
 
     sha256:
       linux:
-        x86_64: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
-        aarch64: 2b661c6ef508e902f388e9098d9c4c5aca72c87b55922d94abdba830b4dc885e
+        x64: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
       windows:
-        x86_64: 0bf217086ecb1392070020810b888bd405cb1dd5f088c16c45d9de1e5ea6b638
+        x64: 0bf217086ecb1392070020810b888bd405cb1dd5f088c16c45d9de1e5ea6b638
 
     patterns:
       linux:
-        x86_64: "^rg$"
-        aarch64: "^rg$"
+        x64: "^rg$"
       windows:
-        x86_64: "^rg\\.exe$"
+        x64: "^rg\\.exe$"
+```
+
+---
+
+# Binman Resolve
+
+Binman resolve will try to resolve the binary path to a specific binary you defined above in the config using the package name key, the possible executable names, and the path to the bin directory.
+
+```js
+import { binmanResolve } from "umbr-binman";
+
+let exePath = await binmanResolve("ripgrep", ["rg"], "path/to/bin");
 ```

@@ -102,9 +102,17 @@ func (b *Binary) Validate() error {
 	}
 
 	validArchs := map[string]bool{
-		"x86_64": true,
-		"arm64":  true,
-	} // any other is a alias to this, for now no legacy ones
+		"arm":     true,
+		"arm64":   true,
+		"ia32":    true,
+		"loong64": true,
+		"mips":    true,
+		"mipsel":  true,
+		"ppc64":   true,
+		"riscv64": true,
+		"s390x":   true,
+		"x64":     true,
+	} // based on node js process.arch 
 
 	// Convert valid lists to strings for readable error messages
 	validPlatformList := make([]string, 0, len(validPlatforms))

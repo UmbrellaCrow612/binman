@@ -2,15 +2,19 @@ package main
 
 import (
 	"strings"
+	"time"
 
 	"github.com/UmbrellaCrow612/binman/cli/arguments"
 	"github.com/UmbrellaCrow612/binman/cli/config"
 	"github.com/UmbrellaCrow612/binman/cli/console"
+	"github.com/UmbrellaCrow612/binman/cli/extractor"
 	"github.com/UmbrellaCrow612/binman/cli/fetch"
 )
 
 // Main entry point
 func main() {
+	start := time.Now() 
+
 	options, err := arguments.Parse()
 	if err != nil {
 		console.ExitError(err)
@@ -40,4 +44,11 @@ func main() {
 	for _, pack := range *conf {
 		fetch.Get(&pack, options)
 	}
+
+	for _, pack := range *conf {
+		extractor.Extract(&pack, options)
+	}
+
+	elapsed := time.Since(start)
+	console.LogInfo("Total time taken: " + elapsed.String())
 }

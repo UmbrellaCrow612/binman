@@ -1,48 +1,44 @@
 package t
 
-// Config represents the top-level list of all software packages.
+// Config is the root level of your YAML file.
+// It is a slice of Packages.
+//
 // YAML Example:
 // - name: ripgrep
-// - name: fd
+//   platforms: { ... }
 type Config []Package
 
-// Package defines a specific tool and the different ways it can be downloaded.
-// YAML Example:
-// name: ripgrep
-// platforms: [...]
+// Package represents a software tool and its distribution data across OS/Arch.
 type Package struct {
-	// Name is the identifier of the package (e.g., "ripgrep").
+	// Name is the human-readable name of the package.
 	Name string `yaml:"name"`
 
-	// Platforms is a list because of the dash ('-') before the OS name in your YAML.
-	// It contains maps where the key is the OS (e.g., "linux", "darwin").
-	Platforms []Platform `yaml:"platforms"`
+	// Platforms maps an Operating System (e.g., "linux", "windows", "darwin")
+	// to a collection of available CPU architectures.
+	//
+	// YAML Example:
+	// platforms:
+	//   linux:
+	//     x64: { ... }
+	Platforms map[string]map[string]Asset `yaml:"platforms"`
 }
 
-// Platform maps an Operating System name to a list of available CPU architectures.
+// Asset contains the specific metadata required to download and verify
+// a binary for a specific OS and Architecture combination.
+//
 // YAML Example:
-// - linux:
-//     - x64: [...]
-type Platform map[string][]Architecture
-
-// Architecture maps a specific CPU design to its download and verification metadata.
-// YAML Example:
-// - x64:
-//     url: "..."
-type Architecture map[string]Asset
-
-// Asset contains the final technical details needed to download and verify a binary.
-// YAML Example:
-// url: https://github.com/...
-// sha256: "sha:234..."
-// pattern: "look for..."
+// x64:
+//   url: https://github.com/...
+//   sha256: "234..."
+//   pattern: "bin/rg"
 type Asset struct {
-	// URL is the direct link to the compressed archive or binary.
+	// URL is the direct download link for the package archive or binary.
 	URL string `yaml:"url"`
 
-	// SHA256 is the checksum used to verify the integrity of the downloaded file.
+	// SHA256 is the checksum used to verify that the file hasn't been tampered with.
 	SHA256 string `yaml:"sha256"`
 
-	// Pattern is a regex or string used to identify the correct file within an archive.
+	// Pattern is a string or regex used to find the specific binary
+	// within a downloaded .tar.gz or .zip file.
 	Pattern string `yaml:"pattern"`
 }

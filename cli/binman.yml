@@ -1,7 +1,12 @@
 - name: ripgrep
   platforms:
-    - linux:
-        - x64:
-            url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-            sha256: "sha:234 or 234"
-            pattern: "look for binarys exe files and then only match for those"
+    linux:
+      x64:
+        url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
+        sha256: "sha:234 or 234"
+        pattern: "look for binarys exe files and then only match for those"
+    windows:
+      x64:
+        url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-msvc.zip
+        sha256: "sha:567"
+        pattern: "ripgrep.exe"

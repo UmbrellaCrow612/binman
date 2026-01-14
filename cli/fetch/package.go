@@ -2,6 +2,10 @@ package fetch
 
 import (
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"slices"
@@ -24,7 +28,7 @@ func Get(p *t.Package, o *t.ArgOptions) error {
 		return err
 	}
 
-	console.LogInfo("Download package " + p.Name)
+	console.LogInfo("Downloading package: " + p.Name)
 
 	packageDir := filepath.Join(downloadDir, p.Name)
 
@@ -39,7 +43,7 @@ func Get(p *t.Package, o *t.ArgOptions) error {
 
 		for arch, asset := range archMap {
 			if len(o.Architectures) > 0 && !slices.Contains(o.Architectures, arch) {
-				console.LogInfo("Skipping architectures " + arch)
+				console.LogInfo("Skipping architectures: " + arch)
 				continue
 			}
 			finalDownloadDir := filepath.Join(platformDir, arch)
@@ -55,13 +59,40 @@ func Get(p *t.Package, o *t.ArgOptions) error {
 
 // Download the asset at the given dir
 func get(asset *t.Asset, downloadPath string) error {
-	folderDir := path.Base(asset.URL)
-	if strings.TrimSpace(folderDir) == "" || folderDir == "." {
-		return errors.New("URL does not point to a file or folder " + asset.URL)
+	fileName := path.Base(strings.Split(asset.URL, "?")[0])
+	if strings.TrimSpace(fileName) == "" || fileName == "." {
+		return errors.New("URL does not point to a file: " + asset.URL)
 	}
-	finalDownloadPath := filepath.Join(downloadPath, folderDir)
 
-	console.LogInfo("Downaloding content to " + finalDownloadPath)
+	finalDownloadPath := filepath.Join(downloadPath, fileName)
 
+	console.LogInfo("Downloading content to: " + finalDownloadPath)
+
+	resp, err := http.Get(asset.URL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to download file: %s, status: %s", asset.URL, resp.Status)
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(filepath.Dir(finalDownloadPath), 0755)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(finalDownloadPath, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	console.LogInfo("Downloaded successfully: " + finalDownloadPath)
 	return nil
 }

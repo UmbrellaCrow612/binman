@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/UmbrellaCrow612/binman/cli/global"
 	"github.com/UmbrellaCrow612/binman/cli/t"
 )
 
@@ -41,6 +42,7 @@ func Parse() (*t.ArgOptions, error) {
 
 	platforms := flagSet.String("platforms", "", "Comma-separated list of platforms for example: linux,windows,darwin")
 	architectures := flagSet.String("architectures", "", "Comma-separated list of architectures for example x64,arm64")
+	verbose := flagSet.Bool("verbose", true, "Bool flag to produce logs or not during runtime")
 
 	err = flagSet.Parse(remainingArgs)
 	if err != nil {
@@ -49,6 +51,7 @@ func Parse() (*t.ArgOptions, error) {
 
 	options.Architectures = strings.Split(*architectures, ",")
 	options.Platforms = strings.Split(*platforms, ",")
+	global.Verbose = *verbose
 
 	binmanYmlPath, err := filepath.Abs(path.Join(options.BasePath, "binman.yml"))
 	if err != nil {

@@ -14,6 +14,11 @@ import (
 // Fetch a package into ./downloads/packname/platform/arch/...
 // Using the options defined
 func Get(p *t.Package, o *t.ArgOptions) error {
+	if len(o.Packages) > 0 && !slices.Contains(o.Packages, p.Name) {
+		console.LogInfo("Skipping downloading package " + p.Name)
+		return nil
+	}
+
 	downloadDir, err := filepath.Abs(filepath.Join(o.BasePath, "downloads"))
 	if err != nil {
 		return err

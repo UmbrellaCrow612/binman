@@ -10,9 +10,14 @@ import (
 
 // Validate the arguments with the config provided
 func ValidateWithConfig(a *t.ArgOptions, c *t.Config) error {
+	binmanPackages := []string{}
 	for _, p := range *c {
-		if !slices.Contains(a.Packages, p.Name) {
-			return errors.New("Packages passed is not found in the binman.yml file " + strings.Join(a.Packages, ", "))
+		binmanPackages = append(binmanPackages, p.Name)
+	}
+
+	for _, p := range a.Packages {
+		if len(a.Packages) > 0 && !slices.Contains(binmanPackages, p) {
+			return errors.New("Package passed is not found in the binman.yml file: " + p + " - binman packages " + strings.Join(binmanPackages, ", "))
 		}
 	}
 

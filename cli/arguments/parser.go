@@ -38,15 +38,15 @@ func Parse() (*t.ArgOptions, error) {
 
 	flagSet := flag.NewFlagSet("binman", flag.ContinueOnError)
 
-	platforms := flagSet.String("platforms", "", "Comma-separated list of platforms")
-	architectures := flagSet.String("architectures", "", "Comma-separated list of architectures")
+	platforms := flagSet.String("platforms", "", "Comma-separated list of platforms for example: linux,windows,darwin")
+	architectures := flagSet.String("architectures", "", "Comma-separated list of architectures for example x64,arm64")
 
 	err = flagSet.Parse(remainingArgs)
 	if err != nil {
 		return &options, err
 	}
 
-	options.Platforms = strings.Split(*architectures, ",")
+	options.Architectures = strings.Split(*architectures, ",")
 	options.Platforms = strings.Split(*platforms, ",")
 
 	return &options, nil

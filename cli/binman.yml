@@ -1,19 +1,13 @@
-binaries:
-  - name: ripgrep
-    urls:
-      linux:
-        x64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-      windows:
-        x64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip
-
-    sha256:
-      linux:
-        x64: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
-      windows:
-        x64: 0bf217086ecb1392070020810b888bd405cb1dd5f088c16c45d9de1e5ea6b638
-
-    patterns:
-      linux:
-        x64: "^rg$"
-      windows:
-        x64: "^rg\\.exe$"
+- name: ripgrep
+  linux:
+    x64:
+      url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
+      path: "optional if defined to output if valiud path resolve to it else add the basepath/bin to it"
+      sha256: "either be sha:string or just string"
+      pattern: "pattern to find the binary files want"
+  windows:
+    x64:
+      url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
+      path: "optional if defined to output the download content to"
+      sha256: "either be sha:string or just string"
+      pattern: "pattern to find the binary files want"

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -48,6 +49,20 @@ func Parse() (*t.ArgOptions, error) {
 
 	options.Architectures = strings.Split(*architectures, ",")
 	options.Platforms = strings.Split(*platforms, ",")
+
+	binmanYmlPath, err := filepath.Abs(path.Join(options.BasePath, "binman.yml"))
+	if err != nil {
+		return &options, err
+	}
+
+	binmanYmlFileInfo, err := os.Stat(binmanYmlPath)
+	if err != nil {
+		return &options, err
+	}
+	if binmanYmlFileInfo.IsDir() {
+		return &options, errors.New("binman.yml cannot be a directory or a directory exists with the name binman.yml")
+	}
+	options.ConfigPath = binmanYmlPath
 
 	return &options, nil
 }

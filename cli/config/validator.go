@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"net/url"
 	"regexp"
 	"slices"
 	"strings"
@@ -52,8 +53,30 @@ func validatePackage(p *t.Package) error {
 
 			const sha256Prefix = "sha256:"
 			asset.SHA256 = strings.TrimPrefix(asset.SHA256, sha256Prefix)
+
+			if strings.TrimSpace(asset.URL) == "" {
+				return errors.New("URL must be defined for " + platform + " " + arch)
+			}
+
+			if !isValidURL(asset.URL) {
+				return errors.New("URL must be valid for " + platform + " " + arch)
+			}
 		}
 	}
 
 	return nil
+}
+
+func isValidURL(str string) bool {
+	u, err := url.Parse(str)
+	if err != nil {
+		return false
+	}
+
+	// A valid URL should have a scheme (http/https) and a host
+	if u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	return true
 }

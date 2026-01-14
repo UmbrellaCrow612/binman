@@ -1,94 +1,48 @@
 package t
 
-// Config represents the entire binman.yml file.
-//
-// Example binman.yml:
-//
+// Config represents the top-level list of all software packages.
+// YAML Example:
 // - name: ripgrep
-//   linux:
-//     x64:
-//       url: "https://example.com/rg-linux-x64.tar.gz"
-//       sha256: "abc123"
-//       pattern: "rg-*"
-//   windows:
-//     x64:
-//       url: "https://example.com/rg-win-x64.zip"
-//       sha256: "def456"
-//       pattern: "rg.exe"
-//
-type Config []Entry
+// - name: fd
+type Config []Package
 
-// Entry represents a single binary definition.
-//
-// Example:
-//
-// - name: ripgrep
-//   linux:
-//     x64:
-//       url: "..."
-//       sha256: "..."
-//       pattern: "..."
-//
-type Entry struct {
-	// Name of the binary/tool
-	//
-	// name: ripgrep
+// Package defines a specific tool and the different ways it can be downloaded.
+// YAML Example:
+// name: ripgrep
+// platforms: [...]
+type Package struct {
+	// Name is the identifier of the package (e.g., "ripgrep").
 	Name string `yaml:"name"`
 
-	// Platforms defines per-platform configurations.
-	// The key is the platform name (linux, windows, darwin, etc).
-	//
-	// linux:
-	//   x64:
-	//     url: "..."
-	//
-	// windows:
-	//   x64:
-	//     url: "..."
-	//
-	// NOTE:
-	// This is inlined so platforms appear at the same level as `name`
-	Platforms map[string]PlatformDefinition `yaml:",inline"`
+	// Platforms is a list because of the dash ('-') before the OS name in your YAML.
+	// It contains maps where the key is the OS (e.g., "linux", "darwin").
+	Platforms []Platform `yaml:"platforms"`
 }
 
-// PlatformDefinition represents all architectures for a platform.
-//
-// Example:
-//
-// linux:
-//   x64:
-//     url: "..."
-//     sha256: "..."
-//     pattern: "rg-*"
-//   arm64:
-//     url: "..."
-//     sha256: "..."
-//     pattern: "rg-*"
-//
-type PlatformDefinition map[string]ArchitectureDefinition
+// Platform maps an Operating System name to a list of available CPU architectures.
+// YAML Example:
+// - linux:
+//     - x64: [...]
+type Platform map[string][]Architecture
 
-// ArchitectureDefinition represents a single architecture download.
-//
-// Example:
-//
-// x64:
-//   url: "https://example.com/rg-linux-x64.tar.gz"
-//   sha256: "abc123"
-//   pattern: "rg-*"
-//
-type ArchitectureDefinition struct {
-	// Download URL for this platform + architecture
-	//
-	// url: "https://example.com/rg-linux-x64.tar.gz"
+// Architecture maps a specific CPU design to its download and verification metadata.
+// YAML Example:
+// - x64:
+//     url: "..."
+type Architecture map[string]Asset
+
+// Asset contains the final technical details needed to download and verify a binary.
+// YAML Example:
+// url: https://github.com/...
+// sha256: "sha:234..."
+// pattern: "look for..."
+type Asset struct {
+	// URL is the direct link to the compressed archive or binary.
 	URL string `yaml:"url"`
 
-	// SHA256 checksum for verifying the downloaded binary
-	//
-	// sha256: "abc123"
+	// SHA256 is the checksum used to verify the integrity of the downloaded file.
 	SHA256 string `yaml:"sha256"`
 
-	// Filename pattern to match inside extracted archives
-	//
-	// pattern: "rg-*"
+	// Pattern is a regex or string used to identify the correct file within an archive.
 	Pattern string `yaml:"pattern"`
 }

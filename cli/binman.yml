@@ -1,25 +1,7 @@
 - name: ripgrep
-  linux:
-    x64:
-      url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-      sha256: "sha:234 or 234"
-      pattern: "look for binarys exe files and then only match for those"
-
-
-- name: ripgrep
-  linux:
-    x64:
-      url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-      sha256: "sha:234 or 234"
-      pattern: "only copy binarys / exe's that match this"
-
-
-
-step one parse cli args 
-step tweo parse config file 
-loop download contents to 
-downloads/packname/platform/arch/...zip file
-extracted/packname/platform/arch/...extracted content no filtering
-bin/packname/platform/arch/ ...copy over binarys only that match the term from extracted
-
-
+  platforms:
+    - linux:
+        - x64:
+            url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
+            sha256: "sha:234 or 234"
+            pattern: "look for binarys exe files and then only match for those"

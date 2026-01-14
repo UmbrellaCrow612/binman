@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/UmbrellaCrow612/binman/cli/global"
@@ -49,9 +50,31 @@ func Parse() (*t.ArgOptions, error) {
 		return &options, err
 	}
 
-	options.Architectures = strings.Split(*architectures, ",")
-	options.Platforms = strings.Split(*platforms, ",")
+	splitAndFilter := func(s string) []string {
+		var result []string
+		for item := range strings.SplitSeq(s, ",") {
+			if trimmed := strings.TrimSpace(item); trimmed != "" {
+				result = append(result, trimmed)
+			}
+		}
+		return result
+	}
+
+	options.Platforms = splitAndFilter(*platforms)
+	options.Architectures = splitAndFilter(*architectures)
 	global.Verbose = *verbose
+
+	for _, p := range options.Platforms {
+		if !slices.Contains(global.ValidPlatforms, p) {
+			return &options, errors.New("Platform passed is not valid: " + p + " - valid platforms are " + strings.Join(global.ValidPlatforms, ", "))
+		}
+	}
+
+	for _, a := range options.Architectures {
+		if !slices.Contains(global.ValidArchitectures, a) {
+			return &options, errors.New("Architecture passed is not valid: " + a + " - valid architectures are " + strings.Join(global.ValidArchitectures, ", "))
+		}
+	}
 
 	binmanYmlPath, err := filepath.Abs(path.Join(options.BasePath, "binman.yml"))
 	if err != nil {

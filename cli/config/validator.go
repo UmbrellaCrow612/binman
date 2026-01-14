@@ -30,12 +30,12 @@ func validatePackage(p *t.Package) error {
 
 	for platform, archMap := range p.Platforms {
 		if !slices.Contains(global.ValidPlatforms, platform) {
-			return errors.New("Platform not valid: " + platform + ". Valid platforms are: " + strings.Join(global.ValidPlatforms, ", "))
+			return errors.New("binman.yml platform not valid: " + platform + " - Valid platforms are: " + strings.Join(global.ValidPlatforms, ", "))
 		}
 
 		for arch, asset := range archMap {
 			if !slices.Contains(global.ValidArchitectures, arch) {
-				return errors.New("Architecture not valid: " + arch + ". Valid architectures are: " + strings.Join(global.ValidArchitectures, ", "))
+				return errors.New("binman.yml architecture not valid: " + arch + " - Valid architectures are: " + strings.Join(global.ValidArchitectures, ", "))
 			}
 
 			if strings.TrimSpace(asset.Pattern) == "" {

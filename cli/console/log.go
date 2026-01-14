@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/UmbrellaCrow612/binman/cli/global"
 )
 
 // ANSI color codes
@@ -11,11 +13,15 @@ const (
 	red    = "\033[31m"
 	yellow = "\033[33m"
 	green  = "\033[32m"
-	reset  = "\033[0m" 
+	reset  = "\033[0m"
 )
 
 // logMessage prints a structured message with timestamp and color
 func logMessage(level string, color string, msg string) {
+	if !global.Verbose {
+		return
+	}
+
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
 	// Color only the level, then reset
 	fmt.Printf("[%s] %s%s%s %s\n", timestamp, color, level, reset, msg)

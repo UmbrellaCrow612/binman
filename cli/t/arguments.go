@@ -7,4 +7,10 @@ type ArgOptions struct {
 
 	// Holds the abs path to the binman config file i.e the binman.yml file for example c:/dev/some/project/binman.yml
 	ConfigPath string
+
+	// Contains a array of specific architectures to build for example [x64]
+	Architectures []string
+
+	// Contains a list of specific platforms to build for example [linux, darwin]
+	Platforms []string
 }

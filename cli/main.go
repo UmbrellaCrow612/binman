@@ -1,8 +1,9 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/UmbrellaCrow612/binman/cli/arguments"
-	"github.com/UmbrellaCrow612/binman/cli/config"
 	"github.com/UmbrellaCrow612/binman/cli/console"
 )
 
@@ -13,5 +14,5 @@ func main() {
 		console.ExitError(err)
 	}
 
-	config, err := config.Parse()
+	fmt.Println(options)
 }

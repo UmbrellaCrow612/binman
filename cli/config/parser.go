@@ -1,5 +1,5 @@
 package config
 
-func Parse(){
+func Parse(filePath string){
 
 }

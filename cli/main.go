@@ -20,6 +20,7 @@ func main() {
 	console.LogInfo("Binman yml file path: " + options.ConfigPath)
 	console.LogInfo("Build platforms: " + strings.Join(options.Platforms, ","))
 	console.LogInfo("Build architectures: " + strings.Join(options.Architectures, ","))
+	console.LogInfo("Build packages: " + strings.Join(options.Packages, ", "))
 
 	conf, err := config.Parse(options.ConfigPath)
 	if err != nil {
@@ -27,6 +28,11 @@ func main() {
 	}
 
 	err = config.Validate(conf)
+	if err != nil {
+		console.ExitError(err)
+	}
+
+	err = arguments.ValidateWithConfig(options, conf)
 	if err != nil {
 		console.ExitError(err)
 	}

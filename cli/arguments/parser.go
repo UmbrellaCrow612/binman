@@ -44,6 +44,7 @@ func Parse() (*t.ArgOptions, error) {
 	platforms := flagSet.String("platforms", "", "Comma-separated list of platforms for example: linux,windows,darwin")
 	architectures := flagSet.String("architectures", "", "Comma-separated list of architectures for example x64,arm64")
 	verbose := flagSet.Bool("verbose", true, "Bool flag to produce logs or not during runtime")
+	packages := flagSet.String("packages", "", "Comma-separated list of packages you want to download for example but not inclusive to ripgrep,find etc")
 
 	err = flagSet.Parse(remainingArgs)
 	if err != nil {
@@ -62,6 +63,7 @@ func Parse() (*t.ArgOptions, error) {
 
 	options.Platforms = splitAndFilter(*platforms)
 	options.Architectures = splitAndFilter(*architectures)
+	options.Packages = splitAndFilter(*packages)
 	global.Verbose = *verbose
 
 	for _, p := range options.Platforms {

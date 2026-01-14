@@ -13,4 +13,7 @@ type ArgOptions struct {
 
 	// Contains a list of specific platforms to build for example [linux, darwin]
 	Platforms []string
+
+	// Contains a list of specific packages to download i.e if you want to just get ripgrep or some other package you defined
+	Packages []string
 }

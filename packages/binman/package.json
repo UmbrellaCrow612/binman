@@ -23,17 +23,6 @@
   ],
   "author": "Yousaf Wazir",
   "license": "ISC",
-  "os": [
-    "darwin",
-    "linux",
-    "win32"
-  ],
-  "cpu": [
-    "x64",
-    "arm64",
-    "ia32",
-    "arm"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/UmbrellaCrow612/binman.git"
@@ -42,7 +31,10 @@
     "index.js",
     "cli.js",
     "bin/",
-    "scripts/",
     "README.md"
-  ]
+  ],
+  "devDependencies": {
+    "@types/node": "^25.0.8",
+    "typescript": "^5.9.3"
+  }
 }

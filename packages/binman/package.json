@@ -1,13 +1,14 @@
 {
   "name": "umbr-binman",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "A utility to download, verify, and extract external binaries from configuration files.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
-    "binman": "cli.js"
+    "binman": "script/cli.js"
   },
   "scripts": {
-    "postinstall": "node scripts/set-perms.js"
+    "postinstall": "node scripts/post-install.js"
   },
   "keywords": [
     "binary",
@@ -28,9 +29,9 @@
     "url": "git+https://github.com/UmbrellaCrow612/binman.git"
   },
   "files": [
-    "index.js",
-    "cli.js",
-    "bin/",
+    "dist",
+    "scripts",
+    "bin",
     "README.md"
   ],
   "devDependencies": {

@@ -53,6 +53,7 @@ func validatePackage(p *t.Package) error {
 
 			const sha256Prefix = "sha256:"
 			asset.SHA256 = strings.TrimPrefix(asset.SHA256, sha256Prefix)
+			archMap[arch] = asset
 
 			if strings.TrimSpace(asset.URL) == "" {
 				return errors.New("URL must be defined for " + platform + " " + arch)

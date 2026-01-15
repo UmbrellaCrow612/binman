@@ -1,6 +1,7 @@
 package fetch
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
@@ -50,7 +51,7 @@ func Get(p *t.Package, o *t.ArgOptions) error {
 
 			console.LogInfo("Downloading architecture: " + arch)
 
-			err := get(&asset, finalDownloadDir)
+			err := get(&asset, finalDownloadDir, asset.SHA256)
 			if err != nil {
 				return err
 			}
@@ -61,7 +62,7 @@ func Get(p *t.Package, o *t.ArgOptions) error {
 }
 
 // Download the asset at the given dir
-func get(asset *t.Asset, downloadPath string) error {
+func get(asset *t.Asset, downloadPath string, sha256 string) error {
 	fileName := path.Base(strings.Split(asset.URL, "?")[0])
 	if strings.TrimSpace(fileName) == "" || fileName == "." {
 		return errors.New("URL does not point to a file: " + asset.URL)
@@ -96,6 +97,31 @@ func get(asset *t.Asset, downloadPath string) error {
 		return err
 	}
 
+	sha, err := sha256OfFile(finalDownloadPath)
+	if err != nil {
+		return err
+	}
+
+	if sha != sha256 {
+		return errors.New("SHA256 " + sha + " does not match " + sha256)
+	}
+
+	console.LogInfo("SHA256 verified " + sha256)
 	console.LogInfo("Downloaded successfully: " + finalDownloadPath)
 	return nil
+}
+
+func sha256OfFile(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hasher := sha256.New()
+	if _, err := io.Copy(hasher, file); err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hasher.Sum(nil)), nil
 }

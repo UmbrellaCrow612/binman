@@ -70,12 +70,16 @@ func extract(fromPath string, toPath string) error {
 
 	switch ext {
 	case ".zip":
-		extractZip(fromPath, toPath)
+		err := extractZip(fromPath, toPath)
+		return err
 	case ".tar":
-		ExtractTar(fromPath, toPath)
+		err := ExtractTar(fromPath, toPath)
+		return err
+	case ".gz":
+		err := ExtractTarGz(fromPath, toPath)
+		return err
 	default:
 		return errors.New("File extraction failed as extension not supported " + ext)
 
 	}
-	return nil
 }

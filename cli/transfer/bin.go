@@ -58,22 +58,34 @@ func toBin(fromPath string, toPath string, reg *regexp.Regexp) error {
 		return err
 	}
 	if !info.IsDir() {
-		return errors.New("from path is not a directory " + fromPath)
+		return errors.New("from path is not a directory: " + fromPath)
 	}
 
-	err = filepath.WalkDir(fromPath, func(path string, d os.DirEntry, err error) error {
+	if err := os.MkdirAll(toPath, 0755); err != nil {
+		return err
+	}
+
+	return filepath.WalkDir(fromPath, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		if !reg.MatchString(d.Name()) {
+			return nil
+		}
+
+		destPath := filepath.Join(toPath, d.Name())
+
+		if err := os.Rename(path, destPath); err != nil {
 			return err
 		}
 
 		return nil
 	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func pathExists(path string) bool {

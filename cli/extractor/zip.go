@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -18,11 +17,15 @@ func extractZip(fromPath string, toPath string) error {
 		return err
 	}
 	if info.IsDir() {
-		return errors.New("Path is not a valid zip path " + fromPath)
+		return errors.New("path is a directory, not a zip file: " + fromPath)
 	}
-	ext := path.Ext(fromPath)
-	if ext == "" || ext != ".zip" {
-		return errors.New("Path is not a zip path " + fromPath)
+
+	if filepath.Ext(fromPath) != ".zip" {
+		return errors.New("file is not a zip archive: " + fromPath)
+	}
+
+	if err := os.MkdirAll(toPath, os.ModePerm); err != nil {
+		return err
 	}
 
 	archive, err := zip.OpenReader(fromPath)
@@ -31,15 +34,23 @@ func extractZip(fromPath string, toPath string) error {
 	}
 	defer archive.Close()
 
+	destRoot := filepath.Clean(toPath) + string(os.PathSeparator)
+
 	for _, f := range archive.File {
 		filePath := filepath.Join(toPath, f.Name)
 
-		if !strings.HasPrefix(filePath, filepath.Clean(toPath)+string(os.PathSeparator)) {
-			return errors.New("invalid file path " + filePath)
+		if !strings.HasPrefix(filePath, destRoot) {
+			return errors.New("invalid file path: " + filePath)
+		}
+
+		if f.Mode()&os.ModeSymlink != 0 {
+			return errors.New("symlinks are not allowed: " + f.Name)
 		}
 
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(filePath, os.ModePerm)
+			if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
+				return err
+			}
 			continue
 		}
 
@@ -47,22 +58,21 @@ func extractZip(fromPath string, toPath string) error {
 			return err
 		}
 
-		dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
 			return err
 		}
+		defer dstFile.Close()
 
-		fileInArchive, err := f.Open()
+		srcFile, err := f.Open()
 		if err != nil {
 			return err
 		}
+		defer srcFile.Close()
 
-		if _, err := io.Copy(dstFile, fileInArchive); err != nil {
+		if _, err := io.Copy(dstFile, srcFile); err != nil {
 			return err
 		}
-
-		dstFile.Close()
-		fileInArchive.Close()
 	}
 
 	return nil

@@ -4,4 +4,4 @@
       x64:
         url: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_linux_amd64.zip
         sha256: "sha256:787535a8a916864d7da280c385aaf4d6347c0c26fc4613c2dceb1a7b6261dce2"
-        pattern: "look for binarys exe files and then only match for those"
+        pattern: "(?i)fsearch"

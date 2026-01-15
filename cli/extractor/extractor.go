@@ -46,6 +46,7 @@ func Extract(p *t.Package, o *t.ArgOptions) error {
 				continue
 			}
 
+			console.LogInfo("Extracting content to " + archDir)
 			if err := extract(downloadedDir, archDir); err != nil {
 				return err
 			}

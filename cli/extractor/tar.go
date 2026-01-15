@@ -2,75 +2,75 @@ package extractor
 
 import (
 	"archive/tar"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/UmbrellaCrow612/binman/cli/console"
 )
 
-func extractTar(tarPath string) error {
-	// Validate file exists
-	info, err := os.Stat(tarPath)
+// Extract a tar file path to a a destinaion path
+func ExtractTar(fromPath string, toPath string) error {
+	info, err := os.Stat(fromPath)
 	if err != nil {
-		return fmt.Errorf("file does not exist: %w", err)
+		return err
 	}
 	if info.IsDir() {
-		return fmt.Errorf("path is a directory, not a file")
+		return errors.New("from path is not a file: " + fromPath)
 	}
 
-	// Validate .tar extension
-	if strings.ToLower(filepath.Ext(tarPath)) != ".tar" {
-		return fmt.Errorf("file is not a .tar archive")
+	ext := filepath.Ext(fromPath)
+	if ext == "" || ext == "." {
+		return errors.New("from path doesn't have a file extension: " + fromPath)
 	}
 
-	// Open the tar file
-	file, err := os.Open(tarPath)
+	if ext != ".tar" {
+		return errors.New("from path is not a tar file: " + fromPath)
+	}
+
+	file, err := os.Open(fromPath)
 	if err != nil {
-		return fmt.Errorf("failed to open tar file: %w", err)
+		return err
 	}
 	defer file.Close()
 
-	// Create a tar reader
 	tr := tar.NewReader(file)
 
-	// Extract files to the same directory as tar
-	destDir := filepath.Dir(tarPath)
-
 	for {
-		header, err := tr.Next()
+		hdr, err := tr.Next()
 		if err == io.EOF {
-			break // end of archive
+			break
 		}
 		if err != nil {
-			return fmt.Errorf("error reading tar: %w", err)
+			return err
 		}
 
-		targetPath := filepath.Join(destDir, header.Name)
+		targetPath := filepath.Join(toPath, hdr.Name)
 
-		switch header.Typeflag {
+		switch hdr.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(targetPath, os.FileMode(header.Mode)); err != nil {
-				return fmt.Errorf("failed to create directory: %w", err)
+			if err := os.MkdirAll(targetPath, os.FileMode(hdr.Mode)); err != nil {
+				return err
 			}
 		case tar.TypeReg:
-			// Ensure parent directory exists
 			if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
-				return fmt.Errorf("failed to create parent directory: %w", err)
+				return err
 			}
 
-			outFile, err := os.OpenFile(targetPath, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			outFile, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY, os.FileMode(hdr.Mode))
 			if err != nil {
-				return fmt.Errorf("failed to create file: %w", err)
+				return err
 			}
 
 			if _, err := io.Copy(outFile, tr); err != nil {
 				outFile.Close()
-				return fmt.Errorf("failed to write file: %w", err)
+				return err
 			}
 			outFile.Close()
 		default:
-			fmt.Printf("Skipping unsupported type: %c in %s\n", header.Typeflag, header.Name)
+			console.LogWarning(fmt.Sprintf("Skipping unknown type: %c in %s\n", hdr.Typeflag, hdr.Name))
 		}
 	}
 

@@ -1,19 +1,7 @@
-binaries:
-  - name: ripgrep
-    urls:
-      linux:
-        x64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-      windows:
-        x64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip
-
-    sha256:
-      linux:
-        x64: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
-      windows:
-        x64: 0bf217086ecb1392070020810b888bd405cb1dd5f088c16c45d9de1e5ea6b638
-
-    patterns:
-      linux:
-        x64: "^rg$"
-      windows:
-        x64: "^rg\\.exe$"
+- name: fsearch
+  platforms:
+    linux:
+      x64:
+        url: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_linux_amd64.zip
+        sha256: "sha256:787535a8a916864d7da280c385aaf4d6347c0c26fc4613c2dceb1a7b6261dce2"
+        pattern: "(?i)fsearch"

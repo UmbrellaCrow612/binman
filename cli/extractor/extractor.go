@@ -1,89 +1,86 @@
 package extractor
 
 import (
-	"fmt"
-	"io/fs"
+	"errors"
 	"os"
+	"path"
 	"path/filepath"
-	"slices"
+	"strings"
 
-	"github.com/UmbrellaCrow612/binman/cli/args"
+	"github.com/UmbrellaCrow612/binman/cli/console"
+	"github.com/UmbrellaCrow612/binman/cli/t"
 )
 
-var supportedArchiveFormats = []string{".zip", ".tar", ".gz", ".xz"}
-
-// Gets all folders which are archive
-func GetAllArchiveFiles(basePath string) ([]string, error) {
-	downloadPath := filepath.Join(basePath, "downloads")
-	var foundPaths []string
-
-	_, err := os.Stat(downloadPath)
-	if err != nil {
-		return nil, err
-	}
-
-	err = filepath.WalkDir(downloadPath, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if d.IsDir() {
-			return nil
-		}
-
-		extension := filepath.Ext(d.Name())
-		if extension == "" {
-			return nil
-		}
-
-		if !slices.Contains(supportedArchiveFormats, extension) {
-			return nil
-		}
-
-		fullPath, err := filepath.Abs(path)
-		if err != nil {
-			return err
-		}
-
-		foundPaths = append(foundPaths, fullPath)
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return foundPaths, nil
-}
-
-// Extract all downloads
-func Extract(options *args.Options) error {
-	archPaths, err := GetAllArchiveFiles(options.Path)
+// Extract a specific downloaded asset from ./downloads/packname/platform/arch/example.zip
+// To ./extracted/packname/platform/arch/....
+// It will only extract folder that have been downloaded from the previous step
+// as the previous step contains the filerting logic
+func Extract(p *t.Package, o *t.ArgOptions) error {
+	extractedDir, err := filepath.Abs(filepath.Join(o.BasePath, "extracted"))
 	if err != nil {
 		return err
 	}
 
-	for _, path := range archPaths {
-		ext := filepath.Ext(path)
-		var extractError error
+	packnameDir := filepath.Join(extractedDir, p.Name)
 
-		switch ext {
-		case ".zip":
-			extractError = unZip(path)
-		case ".tar":
-			extractError = extractTar(path)
-		case ".gz":
-			extractError = extractTarGz(path)
-		case ".xz":
-			extractError = extractTarXzExternal(path)
-		default:
-			extractError = fmt.Errorf("Unsupported  format %s ", ext)
-		}
+	for platform, archMap := range p.Platforms {
+		platformDir := filepath.Join(packnameDir, platform)
 
-		if extractError != nil {
-			return extractError
+		for arch, asset := range archMap {
+			// Points to where we will extract the content to ./extracted/packname/platform/arch/...
+			archDir := filepath.Join(platformDir, arch)
+
+			fileName := strings.TrimSpace(path.Base(asset.URL))
+			if fileName == "" || fileName == "." {
+				return errors.New("URL does not point to a file: " + asset.URL)
+			}
+
+			// points to where it should be downloaded ./downloads/packname/platform/arch/example.zip from URL
+			downloadedDir, err := filepath.Abs(filepath.Join(o.BasePath, "downloads", p.Name, platform, arch, fileName))
+			if err != nil {
+				return err
+			}
+
+			if !pathExists(downloadedDir) {
+				console.LogInfo("Skipping extract of " + downloadedDir)
+				continue
+			}
+
+			console.LogInfo("Extracting content to " + archDir)
+			if err := extract(downloadedDir, archDir); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
+}
+
+func pathExists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
+}
+
+// Interal impl that takes a from path like ./downloads/packname/platform/arch/example.zip
+// To ./extracted/packname/platform/arch/...
+func extract(fromPath string, toPath string) error {
+	ext := path.Ext(fromPath)
+	if ext == "" {
+		return errors.New("Downloaded path does not have a extension " + fromPath)
+	}
+
+	switch ext {
+	case ".zip":
+		err := extractZip(fromPath, toPath)
+		return err
+	case ".tar":
+		err := ExtractTar(fromPath, toPath)
+		return err
+	case ".gz":
+		err := ExtractTarGz(fromPath, toPath)
+		return err
+	default:
+		return errors.New("File extraction failed as extension not supported " + ext)
+
+	}
 }

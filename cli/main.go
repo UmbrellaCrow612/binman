@@ -9,6 +9,7 @@ import (
 	"github.com/UmbrellaCrow612/binman/cli/console"
 	"github.com/UmbrellaCrow612/binman/cli/extractor"
 	"github.com/UmbrellaCrow612/binman/cli/fetch"
+	"github.com/UmbrellaCrow612/binman/cli/transfer"
 )
 
 // Main entry point
@@ -51,6 +52,13 @@ func main() {
 
 	for _, pack := range *conf {
 		err := extractor.Extract(&pack, options)
+		if err != nil {
+			console.ExitError(err)
+		}
+	}
+
+	for _, pack := range *conf {
+		err := transfer.ToBin(&pack, options)
 		if err != nil {
 			console.ExitError(err)
 		}

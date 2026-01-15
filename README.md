@@ -1,101 +1,108 @@
-# binman
+# Binman CLI
 
-A tool used to download external binary's and place them in the bin folder through a central config file
+**Binman** is a command-line tool for downloading, extracting, and organizing prebuilt binaries for multiple platforms and architectures. It uses a `binman.yml` configuration file to define packages, platforms, and architectures.
 
+---
 
-# Download convention
+## Features
 
-```bash
-path/downloads/package-name/operating-system/archecture/source-code
+* Download packages for multiple platforms (`linux`, `darwin`, `win32`) and architectures (`x64`, `arm64`) etc.
+* Verify downloads using SHA256 checksums.
+* Extract and organize binaries into a consistent folder structure.
+* Support for selective package, platform, and architecture builds.
+* Verbose logging for detailed progress tracking.
+
+---
+
+## Usage
+
+Run the CLI from the base folder containing your `binman.yml` file:
+
+```powershell
+.\cli.exe <base_path> [flags]
 ```
 
-# Bin convention
+### Flags
 
-```bash
-path/bin/package-name/operating-system/archecture/source-code
+| Flag             | Description                                                             |
+| ---------------- | ----------------------------------------------------------------------- |
+| `-platforms`     | Comma-separated list of platforms to build (e.g., `linux,win32,darwin`) |
+| `-architectures` | Comma-separated list of architectures (e.g., `x64,arm64`)               |
+| `-packages`      | Comma-separated list of packages to download (e.g., `ripgrep,fsearch`)  |
+| `-verbose`       | Enable or disable detailed logging during execution (default: `true`)   |
+
+---
+
+### Example Commands
+
+**Download a single package for a specific platform and architecture:**
+
+```powershell
+.\cli.exe . --platforms=win32 --architectures=x64 --packages=fsearch --verbose=true
 ```
 
+**Download all packages defined in `binman.yml` for all platforms and architectures:**
 
-
-# CLI API
-
-```
-Usage: binman <path> [..flags..]
+```powershell
+.\cli.exe .
 ```
 
-Flags
-
-- `--platforms=linux,windows etc`: comma seperated platforms to fetch 
-- `--architectures=x86_64`: commoa seperated arch to fetch only
-- `--no-clean`: passed to turn off pattern cleaning
+# Example binman.yml config file 
 
 
-# Example 
+```yaml
+- name: ripgrep
+  platforms:
+    linux:
+      x64:
+        url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
+        sha256: "1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599"
+        pattern: "^rg$"
+    darwin:
+      x64:
+        url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-apple-darwin.tar.gz
+        sha256: "64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882"
+        pattern: "^rg$"
+    win32:
+      x64:
+        url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-msvc.zip
+        sha256: "124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d87493a"
+        pattern: "^rg\\.exe$"
 
-```bash
-.\cli.exe . --platforms=linux,windows --architectures=x86_64
+- name: fsearch
+  platforms:
+    linux:
+      x64:
+        url: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_linux_amd64.zip
+        sha256: "787535a8a916864d7da280c385aaf4d6347c0c26fc4613c2dceb1a7b6261dce2"
+        pattern: "(?i)^fsearch$"
+    darwin:
+      x64:
+        url: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_darwin_amd64.zip
+        sha256: "b2e7b014394a0eec5b820f802ed98fe70ad6a30d840775c7ed5fd68900c8f037"
+        pattern: "(?i)^fsearch$"
+    win32:
+      x64:
+        url: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_windows_amd64.zip
+        sha256: "e18e6cfcba3ba5fb6626ab7dc65e3ef3ce7b3d996c806eee659c5457f64290a3"
+        pattern: "(?i)^fsearch(.exe)?$"
+
+- name: gopls
+  platforms:
+    linux:
+      x64:
+        url: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-linux-amd64.tar.gz
+        sha256: "f7163011d877bd16b611836f729da7ff0f44ffaa372caf9aea96cda4b3f9f59b"
+        pattern: "^gopls$"
+    darwin:
+      x64:
+        url: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-darwin-arm64.tar.gz
+        sha256: "5ea718a1b0ee6ca6c12da6c7db093b378469e173ef9288adba65d43f5e2c3786"
+        pattern: "^gopls$"
+    win32:
+      x64:
+        url: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-windows-amd64.tar.gz
+        sha256: "3bca2855397d459b71997dd8cb22cf43efcbb950d22aeb14c3663f403179b0ec"
+        pattern: "^gopls(.exe)?$"
+
 ```
-
-Gets windows and linux platform binarys and only x86_64
-
-
-```bash
-PS C:\dev\binman\cli> .\cli.exe . --platforms=linux,windows --architectures=x86_64
-[2025-11-23 16:58:05] Resolved path: C:\dev\binman\cli
-[2025-11-23 16:58:05] Found config file: C:\dev\binman\cli\binman.yml
-[2025-11-23 16:58:05] Target platforms: linux, windows
-[2025-11-23 16:58:05] Target architectures: x86_64
-[2025-11-23 16:58:05] YAML file parsed successfully
-[2025-11-23 16:58:05] Removed C:\dev\binman\cli\bin
-[2025-11-23 16:58:05] Removed C:\dev\binman\cli\downloads
-[2025-11-23 16:58:05] Fetching https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip
-[2025-11-23 16:58:06] SHA256 verified for C:\dev\binman\cli\downloads\ripgrep\windows\x86_64\ripgrep-15.1.0-x86_64-pc-windows-gnu.zip
-[2025-11-23 16:58:06] Fetching https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-[2025-11-23 16:58:06] SHA256 verified for C:\dev\binman\cli\downloads\ripgrep\linux\x86_64\ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-[2025-11-23 16:58:06] Skipping fetch aarch64
-PS C:\dev\binman\cli> 
-```
-
-Examnple bin folder
-
-```bash
-PS C:\dev\binman\cli\bin> tree
-Folder PATH listing for volume Windows
-Volume serial number is 124E-B996
-C:.
-└───ripgrep
-    ├───linux
-    │   └───x86_64
-    └───windows
-        └───x86_64
-PS C:\dev\binman\cli\bin> 
-```
-
-Example binman.yml
-
-```yml
-binaries:
-  - name: ripgrep
-    urls:
-      linux:
-        x86_64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-        aarch64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz
-      windows:
-        x86_64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-gnu.zip
-
-    sha256:
-      linux:
-        x86_64: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
-        aarch64: 2b661c6ef508e902f388e9098d9c4c5aca72c87b55922d94abdba830b4dc885e
-      windows:
-        x86_64: 0bf217086ecb1392070020810b888bd405cb1dd5f088c16c45d9de1e5ea6b638
-
-    patterns:
-      linux:
-        x86_64: "^rg$"
-        aarch64: "^rg$"
-      windows:
-        x86_64: "^rg\\.exe$"
-```
-
-Define cpu arhcectures as `x86_64` or `arm64` any other alias name is not allowed if they are the same don't use the alias version switch to one of these

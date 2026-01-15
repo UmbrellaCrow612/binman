@@ -50,7 +50,10 @@ func Get(p *t.Package, o *t.ArgOptions) error {
 
 			console.LogInfo("Downloading architecture: " + arch)
 
-			get(&asset, finalDownloadDir)
+			err := get(&asset, finalDownloadDir)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

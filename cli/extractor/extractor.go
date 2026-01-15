@@ -46,7 +46,9 @@ func Extract(p *t.Package, o *t.ArgOptions) error {
 				continue
 			}
 
-			extract(downloadedDir, archDir)
+			if err := extract(downloadedDir, archDir); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -67,7 +69,8 @@ func extract(fromPath string, toPath string) error {
 	}
 
 	switch ext {
-	case "":
+	case ".zip":
+		extractZip(fromPath, toPath)
 	default:
 		return errors.New("File extraction failed as extension not supported " + ext)
 

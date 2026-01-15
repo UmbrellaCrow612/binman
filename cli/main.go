@@ -13,7 +13,7 @@ import (
 
 // Main entry point
 func main() {
-	start := time.Now() 
+	start := time.Now()
 
 	options, err := arguments.Parse()
 	if err != nil {
@@ -42,11 +42,18 @@ func main() {
 	}
 
 	for _, pack := range *conf {
-		fetch.Get(&pack, options)
+		err := fetch.Get(&pack, options)
+		if err != nil {
+			console.ExitError(err)
+
+		}
 	}
 
 	for _, pack := range *conf {
-		extractor.Extract(&pack, options)
+		err := extractor.Extract(&pack, options)
+		if err != nil {
+			console.ExitError(err)
+		}
 	}
 
 	elapsed := time.Since(start)

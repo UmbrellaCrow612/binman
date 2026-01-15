@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "binman": "script/cli.js"
+    "binman": "scripts/cli.js"
   },
   "scripts": {
     "postinstall": "node scripts/post-install.js"
@@ -29,9 +29,9 @@
     "url": "git+https://github.com/UmbrellaCrow612/binman.git"
   },
   "files": [
-    "dist",
-    "scripts",
-    "bin",
+    "dist/",
+    "scripts/",
+    "bin/",
     "README.md"
   ],
   "devDependencies": {

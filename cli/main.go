@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/UmbrellaCrow612/binman/cli/arguments"
+	"github.com/UmbrellaCrow612/binman/cli/cleaner"
 	"github.com/UmbrellaCrow612/binman/cli/config"
 	"github.com/UmbrellaCrow612/binman/cli/console"
 	"github.com/UmbrellaCrow612/binman/cli/extractor"
@@ -26,6 +27,8 @@ func main() {
 	console.LogInfo("Build platforms: " + strings.Join(options.Platforms, ","))
 	console.LogInfo("Build architectures: " + strings.Join(options.Architectures, ","))
 	console.LogInfo("Build packages: " + strings.Join(options.Packages, ", "))
+
+	cleaner.CleanStart(options)
 
 	conf, err := config.Parse(options.ConfigPath)
 	if err != nil {
@@ -63,6 +66,8 @@ func main() {
 			console.ExitError(err)
 		}
 	}
+
+	cleaner.CleanEnd(options)
 
 	elapsed := time.Since(start)
 	console.LogInfo("Total time taken: " + elapsed.String())

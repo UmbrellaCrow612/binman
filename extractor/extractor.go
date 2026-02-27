@@ -33,11 +33,8 @@ func Extract(p *t.Package, o *t.ArgOptions) error {
 				return errors.New("URL does not point to a file: " + asset.URL)
 			}
 
-			// points to where it should be downloaded ./downloads/packname/platform/arch/example.zip from URL
-			downloadedDir, err := filepath.Abs(filepath.Join(o.BasePath, "downloads", p.Name, platform, arch, fileName))
-			if err != nil {
-				return err
-			}
+			// points to where it should be downloaded BinmanDownloadPath/packname/platform/arch/example.zip from URL
+			downloadedDir := filepath.Join(global.BinmanDownloadPath, p.Name, platform, arch, fileName)
 
 			if !pathExists(downloadedDir) {
 				console.LogInfo("Skipping extract of " + downloadedDir)

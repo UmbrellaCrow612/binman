@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/UmbrellaCrow612/binman/cli/console"
+	"github.com/UmbrellaCrow612/binman/console"
 )
 
 // Extract a .tar.gz file path to a dest file path

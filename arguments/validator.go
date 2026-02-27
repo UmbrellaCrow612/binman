@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/UmbrellaCrow612/binman/cli/t"
+	"github.com/UmbrellaCrow612/binman/t"
 )
 
 // Validate the arguments with the config provided

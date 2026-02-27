@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/UmbrellaCrow612/binman/cli/global"
-	"github.com/UmbrellaCrow612/binman/cli/t"
+	"github.com/UmbrellaCrow612/binman/global"
+	"github.com/UmbrellaCrow612/binman/t"
 )
 
 // Vaidate a parsed yml file config

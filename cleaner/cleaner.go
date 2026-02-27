@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/UmbrellaCrow612/binman/cli/console"
-	"github.com/UmbrellaCrow612/binman/cli/t"
+	"github.com/UmbrellaCrow612/binman/console"
+	"github.com/UmbrellaCrow612/binman/t"
 )
 
 // Clean the project from folders and files downloaded and made by binman cli

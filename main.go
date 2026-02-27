@@ -4,13 +4,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/UmbrellaCrow612/binman/cli/arguments"
-	"github.com/UmbrellaCrow612/binman/cli/cleaner"
-	"github.com/UmbrellaCrow612/binman/cli/config"
-	"github.com/UmbrellaCrow612/binman/cli/console"
-	"github.com/UmbrellaCrow612/binman/cli/extractor"
-	"github.com/UmbrellaCrow612/binman/cli/fetch"
-	"github.com/UmbrellaCrow612/binman/cli/transfer"
+	"github.com/UmbrellaCrow612/binman/arguments"
+	"github.com/UmbrellaCrow612/binman/cleaner"
+	"github.com/UmbrellaCrow612/binman/config"
+	"github.com/UmbrellaCrow612/binman/console"
+	"github.com/UmbrellaCrow612/binman/extractor"
+	"github.com/UmbrellaCrow612/binman/fetch"
+	"github.com/UmbrellaCrow612/binman/transfer"
 )
 
 // Main entry point

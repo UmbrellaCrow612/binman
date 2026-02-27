@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/UmbrellaCrow612/binman/cli/global"
-	"github.com/UmbrellaCrow612/binman/cli/t"
+	"github.com/UmbrellaCrow612/binman/global"
+	"github.com/UmbrellaCrow612/binman/t"
 )
 
 // Parses the arguments / args passed to the CLI

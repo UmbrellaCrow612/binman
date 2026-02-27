@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/UmbrellaCrow612/binman/cli/console"
+	"github.com/UmbrellaCrow612/binman/console"
 )
 
 // Extract a tar file path to a a destinaion path

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/UmbrellaCrow612/binman/cli/console"
-	"github.com/UmbrellaCrow612/binman/cli/t"
+	"github.com/UmbrellaCrow612/binman/console"
+	"github.com/UmbrellaCrow612/binman/t"
 )
 
 // Extract a specific downloaded asset from ./downloads/packname/platform/arch/example.zip

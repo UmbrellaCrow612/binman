@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/UmbrellaCrow612/binman/cli/global"
+	"github.com/UmbrellaCrow612/binman/global"
 )
 
 // ANSI color codes

@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/UmbrellaCrow612/binman/cli/console"
-	"github.com/UmbrellaCrow612/binman/cli/t"
+	"github.com/UmbrellaCrow612/binman/console"
+	"github.com/UmbrellaCrow612/binman/t"
 )
 
 // Transfer the extracted package content to the final destination bin folder using the pattern to only transfer

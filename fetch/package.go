@@ -12,8 +12,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/UmbrellaCrow612/binman/cli/console"
-	"github.com/UmbrellaCrow612/binman/cli/t"
+	"github.com/UmbrellaCrow612/binman/console"
+	"github.com/UmbrellaCrow612/binman/t"
 )
 
 // Fetch a package into ./downloads/packname/platform/arch/...

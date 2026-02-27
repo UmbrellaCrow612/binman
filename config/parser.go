@@ -3,7 +3,7 @@ package config
 import (
 	"os"
 
-	"github.com/UmbrellaCrow612/binman/cli/t"
+	"github.com/UmbrellaCrow612/binman/t"
 	"github.com/goccy/go-yaml"
 )
 

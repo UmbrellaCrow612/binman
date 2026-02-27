@@ -25,9 +25,9 @@ func ToBin(p *t.Package, o *t.ArgOptions) error {
 		for arch, asset := range archMap {
 			archDir := filepath.Join(platformDir, arch)
 
-			// points to the extracted folder it should have bee extracted to ./extracted/packname/platform/arch/...
+			// points to the extracted folder it should have bee extracted to BinmanExtractedPath/packname/platform/arch/...
 			// if it does not exist skip transfer step as it was filtered out
-			extractedDir := global.BinmanExtractedPath
+			extractedDir := filepath.Join(global.BinmanExtractedPath, p.Name, platform, arch)
 			if !pathExists(extractedDir) {
 				console.LogInfo("Skipping transerfing of " + extractedDir)
 				continue

@@ -1,0 +1,27 @@
+{
+  "name": "binman",
+  "version": "1.0.0",
+  "description": "**Binman** is a command-line tool for downloading, extracting, and organizing prebuilt binaries for multiple platforms and architectures. It uses a `binman.yml` configuration file to define packages, platforms, and architectures.",
+  "main": "build.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UmbrellaCrow612/binman.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/UmbrellaCrow612/binman/issues"
+  },
+  "homepage": "https://github.com/UmbrellaCrow612/binman#readme",
+  "devDependencies": {
+    "@types/node": "^25.3.2",
+    "node-github-actions": "^0.0.5",
+    "node-logy": "^0.2.3",
+    "umbr-binman": "^1.0.27"
+  }
+}

@@ -37,3 +37,4 @@ binman_downloads
 binman_extracted
 node_modules
 logs
+dist

@@ -5,6 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "bin": {
+    "binman": "./script/cli.js"
+  },
   "keywords": [
     "binary",
     "downloader",
@@ -17,6 +20,9 @@
     "binman",
     "automation"
   ],
+  "scripts": {
+    "postinstall": "scripts/post-install.js"
+  },
   "author": "Yousaf Wazir",
   "license": "ISC",
   "repository": {

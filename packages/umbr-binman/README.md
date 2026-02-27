@@ -78,7 +78,6 @@ If you want to download the binary's defined in the config run
 npx binman .
 ```
 
-
 Here’s a clean, simple README example you can drop directly into your project.
 
 ---

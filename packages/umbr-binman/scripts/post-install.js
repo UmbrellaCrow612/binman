@@ -11,11 +11,9 @@ const arch = process.arch;
 
 let binName;
 if (platform === "win32") {
-  binName = `binman-windows-${arch}.exe`;
-} else if (platform === "darwin") {
-  binName = `binman-darwin-${arch}`;
+  binName = `binman-${platform}-${arch}.exe`;
 } else {
-  binName = `binman-linux-${arch}`;
+  binName = `binman-${platform}-${arch}`;
 }
 
 const binDir = path.resolve(__dirname, "../bin");
@@ -32,6 +30,10 @@ for (const file of files) {
 
 // Make current binary executable (Linux/macOS)
 if (platform !== "win32") {
+  if (!fs.existsSync(binPath)) {
+    console.error(`Binary does not exit at ${binPath} for binman`);
+    return;
+  }
   fs.chmodSync(binPath, 0o755);
 }
 

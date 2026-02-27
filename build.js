@@ -9,6 +9,8 @@ const logger = new Logger({ showCallSite: true, saveToLogFiles: false });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+process.arch
+
 const platformMap = {
   linux: "linux",
   darwin: "darwin",
@@ -17,7 +19,7 @@ const platformMap = {
 
 const archMap = {
   arm64: "arm64",
-  amd64: "amd64",
+  x64: "amd64",
 };
 
 const platforms = Object.keys(platformMap);

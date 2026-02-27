@@ -21,6 +21,7 @@
   "devDependencies": {
     "@types/node": "^25.3.2",
     "node-github-actions": "^0.0.5",
-    "node-logy": "^0.2.3"
+    "node-logy": "^0.2.3",
+    "umbr-binman": "^1.0.27"
   }
 }

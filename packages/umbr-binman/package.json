@@ -1,6 +1,6 @@
 {
   "name": "umbr-binman",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "A utility to download, verify, and extract external binaries from configuration files.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -45,7 +45,7 @@
   "os": [
     "darwin",
     "linux",
-    "windows"
+    "win32"
   ],
   "cpu": [
     "x64",

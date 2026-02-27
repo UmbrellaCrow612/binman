@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "bin": {
-    "binman": "./scripts/cli.js"
+    "binman": "scripts/cli.js"
   },
   "keywords": [
     "binary",

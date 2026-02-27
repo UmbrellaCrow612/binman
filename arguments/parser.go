@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"os"
-	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -78,7 +77,7 @@ func Parse() (*t.ArgOptions, error) {
 		}
 	}
 
-	binmanYmlPath, err := filepath.Abs(path.Join(options.BasePath, "binman.yml"))
+	binmanYmlPath, err := filepath.Abs(filepath.Join(options.BasePath, "binman.yml"))
 	if err != nil {
 		return &options, err
 	}

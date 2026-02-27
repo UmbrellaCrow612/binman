@@ -8,18 +8,16 @@ import (
 	"strings"
 
 	"github.com/UmbrellaCrow612/binman/console"
+	"github.com/UmbrellaCrow612/binman/global"
 	"github.com/UmbrellaCrow612/binman/t"
 )
 
-// Extract a specific downloaded asset from ./downloads/packname/platform/arch/example.zip
-// To ./extracted/packname/platform/arch/....
+// Extract a specific downloaded asset from BinManDownloadPath/example.zip
+// To BinManExtractedPath/extracted/packname/platform/arch/....
 // It will only extract folder that have been downloaded from the previous step
 // as the previous step contains the filerting logic
 func Extract(p *t.Package, o *t.ArgOptions) error {
-	extractedDir, err := filepath.Abs(filepath.Join(o.BasePath, "extracted"))
-	if err != nil {
-		return err
-	}
+	extractedDir := global.BinmanExtractedPath
 
 	packnameDir := filepath.Join(extractedDir, p.Name)
 

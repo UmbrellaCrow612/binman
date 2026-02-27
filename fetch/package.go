@@ -13,10 +13,11 @@ import (
 	"strings"
 
 	"github.com/UmbrellaCrow612/binman/console"
+	"github.com/UmbrellaCrow612/binman/global"
 	"github.com/UmbrellaCrow612/binman/t"
 )
 
-// Fetch a package into ./downloads/packname/platform/arch/...
+// Fetch a package into bBinmanDownloadPath global variables
 // Using the options defined
 func Get(p *t.Package, o *t.ArgOptions) error {
 	if len(o.Packages) > 0 && !slices.Contains(o.Packages, p.Name) {
@@ -24,10 +25,7 @@ func Get(p *t.Package, o *t.ArgOptions) error {
 		return nil
 	}
 
-	downloadDir, err := filepath.Abs(filepath.Join(o.BasePath, "downloads"))
-	if err != nil {
-		return err
-	}
+	downloadDir := global.BinmanDownloadPath
 
 	console.LogInfo("Downloading package: " + p.Name)
 

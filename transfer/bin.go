@@ -7,18 +7,16 @@ import (
 	"regexp"
 
 	"github.com/UmbrellaCrow612/binman/console"
+	"github.com/UmbrellaCrow612/binman/global"
 	"github.com/UmbrellaCrow612/binman/t"
 )
 
 // Transfer the extracted package content to the final destination bin folder using the pattern to only transfer
 // the required files needed
-// it will look at ./extracted/packname/platform/arch/... if it exists it will then move it to
-// ./bin/packname/platform/arch/....
+// it will look at BinManExtractedPath/packname/platform/arch/... if it exists it will then move it to
+// BinManBinPath/packname/platform/arch/....
 func ToBin(p *t.Package, o *t.ArgOptions) error {
-	binDir, err := filepath.Abs(filepath.Join(o.BasePath, "bin"))
-	if err != nil {
-		return err
-	}
+	binDir := global.BinmanBinPath
 
 	packDir := filepath.Join(binDir, p.Name)
 
@@ -29,7 +27,7 @@ func ToBin(p *t.Package, o *t.ArgOptions) error {
 
 			// points to the extracted folder it should have bee extracted to ./extracted/packname/platform/arch/...
 			// if it does not exist skip transfer step as it was filtered out
-			extractedDir := filepath.Join(o.BasePath, "extracted", p.Name, platform, arch)
+			extractedDir := global.BinmanExtractedPath
 			if !pathExists(extractedDir) {
 				console.LogInfo("Skipping transerfing of " + extractedDir)
 				continue

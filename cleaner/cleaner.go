@@ -2,9 +2,9 @@ package cleaner
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/UmbrellaCrow612/binman/console"
+	"github.com/UmbrellaCrow612/binman/global"
 	"github.com/UmbrellaCrow612/binman/t"
 )
 
@@ -12,9 +12,9 @@ import (
 // these include the downloads folder, extracted folder and the bin folder
 func CleanStart(o *t.ArgOptions) error {
 	paths := []string{
-		filepath.Join(o.BasePath, "downloads"),
-		filepath.Join(o.BasePath, "extracted"),
-		filepath.Join(o.BasePath, "bin"),
+		global.BinmanBinPath,
+		global.BinmanDownloadPath,
+		global.BinmanExtractedPath,
 	}
 
 	for _, p := range paths {
@@ -34,8 +34,8 @@ func CleanStart(o *t.ArgOptions) error {
 // leaving the bin folder intact
 func CleanEnd(o *t.ArgOptions) error {
 	paths := []string{
-		filepath.Join(o.BasePath, "downloads"),
-		filepath.Join(o.BasePath, "extracted"),
+		global.BinmanDownloadPath,
+		global.BinmanExtractedPath,
 	}
 
 	for _, p := range paths {

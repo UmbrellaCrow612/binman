@@ -10,6 +10,7 @@ import (
 	"github.com/UmbrellaCrow612/binman/console"
 	"github.com/UmbrellaCrow612/binman/extractor"
 	"github.com/UmbrellaCrow612/binman/fetch"
+	"github.com/UmbrellaCrow612/binman/global"
 	"github.com/UmbrellaCrow612/binman/transfer"
 )
 
@@ -27,6 +28,8 @@ func main() {
 	console.LogInfo("Build platforms: " + strings.Join(options.Platforms, ","))
 	console.LogInfo("Build architectures: " + strings.Join(options.Architectures, ","))
 	console.LogInfo("Build packages: " + strings.Join(options.Packages, ", "))
+
+	global.CreateGlobalBasePaths(options)
 
 	cleaner.CleanStart(options)
 

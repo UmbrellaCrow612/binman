@@ -11,7 +11,7 @@ const arch = process.arch;
 
 let binName;
 if (platform === "win32") {
-  binName = `binman-${platform}-${arch}.exe`;
+  binName = `binman-windows-${arch}.exe`;
 } else {
   binName = `binman-${platform}-${arch}`;
 }

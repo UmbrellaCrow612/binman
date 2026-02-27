@@ -13,9 +13,9 @@ const platform = process.platform
 
 let binName;
 if (platform === "win32") {
-  binName = `binman-${process.platform}-${arch}.exe`;
+  binName = `binman-windows-${arch}.exe`;
 } else {
-  binName = `binman-${process.platform}-${arch}`;
+  binName = `binman-${platform}-${arch}`;
 }
 
 const binDir = path.resolve(__dirname, "../bin");

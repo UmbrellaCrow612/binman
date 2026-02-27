@@ -32,7 +32,7 @@ for (const file of files) {
 if (platform !== "win32") {
   if (!fs.existsSync(binPath)) {
     console.error(`Binary does not exit at ${binPath} for binman`);
-    return;
+    throw new Error(`Binary does not exit at ${binPath} for binman`)
   }
   fs.chmodSync(binPath, 0o755);
 }

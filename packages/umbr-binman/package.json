@@ -1,12 +1,12 @@
 {
   "name": "umbr-binman",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "A utility to download, verify, and extract external binaries from configuration files.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "bin": {
-    "binman": "scripts/cli.js"
+    "binman": "node scripts/cli.js"
   },
   "keywords": [
     "binary",

@@ -33,7 +33,6 @@ go.work.sum
 
 
 bin
-
-downloads
-
-extracted
+binman_downloads
+binman_extracted
+node_modules

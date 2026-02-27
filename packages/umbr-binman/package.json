@@ -1,0 +1,36 @@
+{
+  "name": "umbr-binman",
+  "version": "1.0.16",
+  "description": "A utility to download, verify, and extract external binaries from configuration files.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "keywords": [
+    "binary",
+    "downloader",
+    "utility",
+    "cli",
+    "devtool",
+    "cross-platform",
+    "build-tool",
+    "package-manager",
+    "binman",
+    "automation"
+  ],
+  "author": "Yousaf Wazir",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UmbrellaCrow612/binman.git"
+  },
+  "files": [
+    "dist/",
+    "scripts/",
+    "bin/",
+    "README.md"
+  ],
+  "devDependencies": {
+    "@types/node": "^25.0.8",
+    "typescript": "^5.9.3"
+  }
+}

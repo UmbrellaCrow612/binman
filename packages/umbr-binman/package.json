@@ -32,5 +32,17 @@
   "devDependencies": {
     "@types/node": "^25.0.8",
     "typescript": "^5.9.3"
-  }
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "windows"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
 }
